@@ -1,0 +1,7 @@
+# Define how to access and load the code
+
+load_from:
+  - grpc_server:
+      host: pipeline
+      port: 4000
+      location_name: "./src/data"

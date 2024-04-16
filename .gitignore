@@ -1,0 +1,4 @@
+/postgresql/
+/configs/dagster/.logs_queue/
+/configs/dagster/.nux/
+/configs/dagster/.telemetry/
