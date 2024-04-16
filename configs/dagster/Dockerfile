@@ -7,7 +7,7 @@ RUN mkdir -p ${DAGSTER_HOME} && \
   mkdir -p ${DAGSTER_HOME}/compute_logs && \
   mkdir -p ${DAGSTER_HOME}/local_artifact_storage
 
-# Set working directory then copy and install requirements.txt
+# Set working directory then copy and install configuration files
 WORKDIR ${DAGSTER_HOME}
 COPY ./requirements.txt ${DAGSTER_HOME}
 RUN pip install --upgrade pip && pip install -r requirements.txt
