@@ -6,7 +6,6 @@ import pandas as pd
 
 from bs4 import BeautifulSoup
 from datetime import datetime
-import time
 
 def process_html(soup, country_tp):
   for h3 in soup.find_all("h3"):
@@ -41,26 +40,26 @@ def download_and_extract(city, state, country, date, url):
 
   # Check if the file already exists to avoid duplicate downloads
   if not os.path.exists(output_path):
-    # Download the file
-    response = requests.get(url)
-    tmp_path = os.path.join(path, url.split("/")[-1])                    # Output: ./data/raw/listings.csv.gz
+    # Open a request session TCP
+    with requests.Session() as session:
+      # Download the file
+      response = session.get(url)
+      tmp_path = os.path.join(path, url.split("/")[-1])                 # Output: ./data/raw/listings.csv.gz
 
-    with open(tmp_path, "wb") as file:
-      file.write(response.content)
-
-    if tmp_path.endswith(".gz"):
-      with gzip.open(tmp_path, "rb") as file_in:
-        with gzip.open(output_path, "wb") as file_out:
+      if tmp_path.endswith(".gz"):
+        with open(tmp_path, "wb") as file:
+          file.write(response.content)
+        with gzip.open(tmp_path, "rb") as file_in, open(output_path, "wb") as file_out:
           shutil.copyfileobj(file_in, file_out)
-      os.remove(tmp_path)
-    else:
-      os.rename(tmp_path, output_path)
+        os.remove(tmp_path)
+      else:
+        with open(tmp_path, "wb") as file:
+          file.write(response.content)
+        os.rename(tmp_path, output_path)
   else:
     print(f"File {name_format} already exists. Skipping download.")
 
 if __name__ == "__main__":
-  start = time.time()
-
   # Get html from the site
   response = requests.get("http://insideairbnb.com/get-the-data")
   html = response.text
@@ -70,6 +69,3 @@ if __name__ == "__main__":
   country_tp = ("United States", )
 
   process_html(soup, country_tp)
-
-  end = time.time()
-  print(end - start)

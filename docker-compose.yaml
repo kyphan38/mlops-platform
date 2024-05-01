@@ -97,6 +97,23 @@ services:
     networks:
       - net
 
+  # Data ETL Pipeline
+  pipeline:
+    build:
+      context: ./src/data/pipeline
+      dockerfile: Dockerfile
+    container_name: pipeline
+    user: root
+    volumes:
+      - ./src/data/pipeline:/opt/dagster/app
+    ports:
+      - "4040:4040"
+      - "4000:4000"
+    env_file:
+      - ./.env
+    networks:
+     - net
+
 networks:
   net:
     driver: bridge

@@ -9,3 +9,9 @@
 
 # Data
 /data/
+
+# Cache from pipeline
+*__pycache__
+
+# Data source
+/src/data/pipeline/data
