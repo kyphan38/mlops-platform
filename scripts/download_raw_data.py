@@ -30,12 +30,12 @@ def process_html(soup, country_tp):
               download_and_extract(city, state, country, date, url)
 
 def download_and_extract(city, state, country, date, url):
-  path = "./data/raw"
+  path = "./src/data/pipeline/data/bronze"
   os.makedirs(path, exist_ok=True)
 
   # Format the date, name and output
   date_format = datetime.strptime(date, "%d %B, %Y").strftime("%d%m%y")
-  name_format = f"{date_format}_{city}_{state}_{country}.csv"
+  name_format = f"{city}_{state}_{country}_{date_format}.csv"
   output_path = os.path.join(path, name_format)
 
   # Check if the file already exists to avoid duplicate downloads

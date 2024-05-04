@@ -1,1 +1,1 @@
-FROM minio/mc:RELEASE.2024-03-30T15-29-52Z
+FROM minio/mc:latest

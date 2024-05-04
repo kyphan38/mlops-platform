@@ -1,33 +1,24 @@
-# Load environment value
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-from dagster import Definitions, load_assets_from_modules
-
-# Import assets
-from .assets.bronze_layer import crawl_data
-
-# Import resources
+from dagster import Definitions
+from .assets.bronze_layer import generate_assets, generate_asset_names
+from .assets.silver_layer import airbnb_dataset
 from .resources.minio_io_manager import MinIOIOManager
 
-# from . import assets
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-# all_assets = load_assets_from_modules([assets])
-
-# defs = Definitions(
-#     assets=all_assets,
-# )
-
+# Setting default values in case environment variables are missing
 MINIO_CONFIG = {
-  "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL"),
-  "minio_access_key_id": os.getenv("MINIO_ACCESS_KEY_ID"),
-  "minio_secret_access_key": os.getenv("MINIO_SECRET_ACCESS_KEY")
+    "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL", "minio:9000"),
+    "minio_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "minio"),
+    "minio_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "minio123"),
+    "minio_bucket": os.getenv("MINIO_BUCKET", "warehouse")
 }
 
-defs = Definitions (
-  assets=[ crawl_data
-  ],
+# Initialize definitions with dynamically generated assets
+defs = Definitions(
+  assets=[airbnb_dataset] + generate_assets("minio_io_manager"),
+  # assets=generate_assets("minio_io_manager"),
   resources={
     "minio_io_manager": MinIOIOManager(MINIO_CONFIG)
   }

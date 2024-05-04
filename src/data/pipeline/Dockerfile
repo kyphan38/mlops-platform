@@ -6,7 +6,7 @@ USER root
 
 # Update packages and install curl
 RUN apt-get update --yes && \
-  apt-get install --yes --no-install-recommends curl && \
+  apt-get install --yes --no-install-recommends curl awscli && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +15,6 @@ WORKDIR /opt/dagster/app
 COPY requirements.txt /opt/dagster/app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app/pipeline
 
 # CMD allows this to be overridden from run launchers or executors that want to run other commands against your repository

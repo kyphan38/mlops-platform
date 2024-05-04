@@ -69,13 +69,15 @@ services:
     build:
       context: ./configs/minio/server
       dockerfile: Dockerfile
-    hostname: minio_server
+    hostname: minio
     container_name: minio_server
     image: minio_server:latest
     ports:
-      - "9001:9001"
       - "9000:9000"
+      - "9001:9001"
     command: ["server", "/data", "--console-address", ":9001"]
+    volumes:
+      - ./logs/minio:/data
     env_file:
       - ./.env
     networks:
@@ -89,7 +91,7 @@ services:
       context: ./configs/minio/client
       dockerfile: Dockerfile
     entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 minio minio123); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/warehouse; /usr/bin/mc policy set public minio/warehouse; exit 0;"
-    hostname: minio_client
+    hostname: mc
     container_name: minio_client
     image: minio_client:latest
     env_file:
@@ -103,6 +105,7 @@ services:
       context: ./src/data/pipeline
       dockerfile: Dockerfile
     container_name: pipeline
+    image: pipeline:latest
     user: root
     volumes:
       - ./src/data/pipeline:/opt/dagster/app
