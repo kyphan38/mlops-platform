@@ -1,6 +1,6 @@
 from dagster import Definitions
-from .assets.bronze_layer import generate_assets, generate_asset_names
-from .assets.silver_layer import airbnb_dataset
+from .assets.bronze_layer import generate_assets
+from .assets.silver_layer import location_table, listing_table, host_table, review_table, fact_table
 from .resources.minio_io_manager import MinIOIOManager
 
 from dotenv import load_dotenv
@@ -17,8 +17,7 @@ MINIO_CONFIG = {
 
 # Initialize definitions with dynamically generated assets
 defs = Definitions(
-  assets=[airbnb_dataset] + generate_assets("minio_io_manager"),
-  # assets=generate_assets("minio_io_manager"),
+  assets=[location_table, listing_table, host_table, review_table, fact_table] + generate_assets("minio_io_manager"),
   resources={
     "minio_io_manager": MinIOIOManager(MINIO_CONFIG)
   }

@@ -5,7 +5,7 @@ import gzip
 import shutil
 from bs4 import BeautifulSoup
 from datetime import datetime
-from dagster import asset, Output, AssetsDefinition
+from dagster import asset, Output
 
 data_dir = "./data/bronze"
 compute_kind = "Pandas"
