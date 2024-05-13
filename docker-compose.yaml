@@ -56,9 +56,15 @@ services:
     container_name: dagster_postgres
     image: dagster_postgres:latest
     volumes:
-      - ./logs/postgres:/var/lib/postgresql/data
+      - ./logs/dagster_postgres:/var/lib/postgresql/data
     env_file:
       - ./.env
+    environment:
+      POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
+      POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${DAGSTER_POSTGRES_HOST}
+      POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
     ports:
       - "5432:5432"
     networks:
@@ -116,6 +122,28 @@ services:
       - ./.env
     networks:
      - net
+
+  # Postgres for Feast
+  feast_postgres:
+    build:
+      context: ./configs/postgres/feast
+      dockerfile: Dockerfile
+    container_name: feast_postgres
+    image: feast_postgres:latest
+    volumes:
+      - ./logs/feast_postgres:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${FEAST_POSTGRES_DB}
+      POSTGRES_USER: ${FEAST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FEAST_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${FEAST_POSTGRES_HOST}
+      POSTGRES_PORT: ${FEAST_POSTGRES_PORT}
+    ports:
+      - "5433:5432"
+    networks:
+      - net
 
 networks:
   net:
