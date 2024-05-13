@@ -1,0 +1,17 @@
+# Logs
+/logs/
+
+# Dagster
+/configs/dagster/dagster_home/.logs_queue/
+/configs/dagster/dagster_home/.nux/
+/configs/dagster/dagster_home/.telemetry/
+/configs/dagster/dagster_home/logs/
+
+# Data
+/data/
+
+# Cache from pipeline
+*__pycache__
+
+# Data source
+/src/data/pipeline/data

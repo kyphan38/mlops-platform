@@ -1,0 +1,151 @@
+version: "3.9"
+
+services:
+  # Dagster
+  dagster:
+    build:
+      context: ./configs/dagster
+      dockerfile: Dockerfile
+    container_name: dagster
+    image: dagster:latest
+
+  # Dagster dagit: web interface
+  dagster_dagit:
+    depends_on:
+      - dagster_postgres
+    image: dagster:latest
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3001"
+      - -w
+      - workspace.yaml
+    container_name: dagster_dagit
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./configs/dagster/dagster_home:/opt/dagster/dagster_home
+    env_file:
+      - ./.env
+    ports:
+      - "3001:3001"
+    networks:
+      - net
+
+  # Dagster daemon: Schedule and orchestrate pipeline executions
+  dagster_daemon:
+    image: dagster:latest
+    entrypoint:
+      - dagster-daemon
+      - run
+    container_name: dagster_daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./configs/dagster/dagster_home:/opt/dagster/dagster_home
+    env_file:
+      - ./.env
+    networks:
+      - net
+
+  # Postgres for Dagster
+  dagster_postgres:
+    build:
+      context: ./configs/postgres/dagster
+      dockerfile: Dockerfile
+    container_name: dagster_postgres
+    image: dagster_postgres:latest
+    volumes:
+      - ./logs/dagster_postgres:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
+      POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${DAGSTER_POSTGRES_HOST}
+      POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
+    ports:
+      - "5432:5432"
+    networks:
+      - net
+
+  # Minio server for data storage
+  minio_server:
+    build:
+      context: ./configs/minio/server
+      dockerfile: Dockerfile
+    hostname: minio
+    container_name: minio_server
+    image: minio_server:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: ["server", "/data", "--console-address", ":9001"]
+    volumes:
+      - ./logs/minio:/data
+    env_file:
+      - ./.env
+    networks:
+      - net
+
+  # Minio client for UNIX command
+  minio_client:
+    depends_on:
+      - minio_server
+    build:
+      context: ./configs/minio/client
+      dockerfile: Dockerfile
+    entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 minio minio123); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/warehouse; /usr/bin/mc policy set public minio/warehouse; exit 0;"
+    hostname: mc
+    container_name: minio_client
+    image: minio_client:latest
+    env_file:
+      - ./.env
+    networks:
+      - net
+
+  # Data ETL Pipeline
+  pipeline:
+    build:
+      context: ./src/data/pipeline
+      dockerfile: Dockerfile
+    container_name: pipeline
+    image: pipeline:latest
+    user: root
+    volumes:
+      - ./src/data/pipeline:/opt/dagster/app
+    ports:
+      - "4040:4040"
+      - "4000:4000"
+    env_file:
+      - ./.env
+    networks:
+     - net
+
+  # Postgres for Feast
+  feast_postgres:
+    build:
+      context: ./configs/postgres/feast
+      dockerfile: Dockerfile
+    container_name: feast_postgres
+    image: feast_postgres:latest
+    volumes:
+      - ./logs/feast_postgres:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${FEAST_POSTGRES_DB}
+      POSTGRES_USER: ${FEAST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FEAST_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${FEAST_POSTGRES_HOST}
+      POSTGRES_PORT: ${FEAST_POSTGRES_PORT}
+    ports:
+      - "5433:5432"
+    networks:
+      - net
+
+networks:
+  net:
+    driver: bridge
+    name: net

@@ -1,0 +1,62 @@
+# Configure dagster instance
+
+# Store job and asset history
+storage:
+  postgres:
+    postgres_db:
+      db_name:
+        env: DAGSTER_PG_DB
+      username:
+        env: DAGSTER_PG_USERNAME
+      password:
+        env: DAGSTER_PG_PASSWORD
+      hostname:
+        env: DAGSTER_PG_HOSTNAME
+      port:
+        env: DAGSTER_PG_PORT
+
+# Define where to execute runs
+run_launcher:
+  module: dagster.core.launcher
+  class: DefaultRunLauncher
+
+# Define policy for prioritization rules and concurrency limits for runs
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs:
+      env: DAGSTER_OVERALL_CONCURRENCY_LIMIT
+
+# Configure compute log storage (stdout and stderr)
+compute_logs:
+  module: dagster.core.storage.local_compute_log_manager
+  class: LocalComputeLogManager
+  config:
+    base_dir: /opt/dagster/dagster_home/compute_logs
+
+# Configure artifacts storage in local disk
+local_artifact_storage:
+  module: dagster.core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /opt/dagster/dagster_home/local_artifact_storage
+
+# Opt in or out of Dagster collecting anonymized usage statistics
+telemetry:
+  enabled: true
+
+# Configure sensor evaluation
+sensors:
+  use_threads: true
+  num_workers: 3
+
+# Configure schedule evaluation
+schedules:
+  use_threads: true
+  num_workers: 3
+
+# Configure auto-materializing assets
+auto_materialize:
+  run_tags:
+    key: value
