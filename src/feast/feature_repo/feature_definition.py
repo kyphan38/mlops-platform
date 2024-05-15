@@ -3,7 +3,7 @@ from feast import Field, FeatureView
 from datetime import timedelta
 
 from entities import entity_id, entity_host_id
-from data_sources import listing_source
+from data_sources import listing_source, host_source, review_source, fact_source
 
 # Define the feature view
 listing_fv = FeatureView(
@@ -33,73 +33,68 @@ listing_fv = FeatureView(
   tags={}
 )
 
+host_fv = FeatureView(
+  name="host_feature_view",
+  description="Feature view for host table",
+  entities=[entity_host_id],
+  ttl=timedelta(days=36500),
+  schema=[
+    Field(name="host_response_rate", dtype=Float64),
+    Field(name="host_acceptance_rate", dtype=Float64),
+    Field(name="host_is_superhost", dtype=Float64),
+    Field(name="host_listings_count", dtype=Float64),
+    Field(name="host_total_listings_count", dtype=Float64),
+    Field(name="host_verifications", dtype=String),
+    Field(name="host_has_profile_pic", dtype=Float64),
+    Field(name="host_identity_verified", dtype=Float64),
+  ],
+  online=False,
+  source=host_source,
+  tags={}
+)
 
+review_fv = FeatureView(
+  name="review_feature_view",
+  description="Feature view for review table",
+  entities=[entity_id],
+  ttl=timedelta(days=36500),
+  schema=[
+    Field(name="number_of_reviews", dtype=Int64),
+    Field(name="number_of_reviews_ltm", dtype=Int64),
+    Field(name="number_of_reviews_l30d", dtype=Int64),
+    Field(name="review_scores_rating", dtype=Float64),
+    Field(name="review_scores_accuracy", dtype=Float64),
+    Field(name="review_scores_cleanliness", dtype=Float64),
+    Field(name="review_scores_checkin", dtype=Float64),
+    Field(name="review_scores_communication", dtype=Float64),
+    Field(name="review_scores_value", dtype=Float64),
+    Field(name="reviews_per_month", dtype=Float64),
+  ],
+  online=False,
+  source=review_source,
+  tags={}
+)
 
-# host_fv = FeatureView(
-#   name="host_feature_view",
-#   description="Feature view for host table",
-#   entities=[entity_host_id],
-#   ttl=timedelta(days=36500),
-#   schema=[
-#     Field(name="host_response_rate", dtype=Float64),
-#     Field(name="host_acceptance_rate", dtype=Float64),
-#     Field(name="host_is_superhost", dtype=Float64),
-#     Field(name="host_listings_count", dtype=Float64),
-#     Field(name="host_total_listings_count", dtype=Float64),
-#     Field(name="host_verifications", dtype=String),
-#     Field(name="host_has_profile_pic", dtype=Float64),
-#     Field(name="host_identity_verified", dtype=Float64),
-#     Field(name="event_timestamp", dtype=String)
-#   ],
-#   online=False,
-#   source=host_source,
-#   tags={}
-# )
-
-# review_fv = FeatureView(
-#   name="review_feature_view",
-#   description="Feature view for review table",
-#   entities=[entity_host_id],
-#   ttl=timedelta(days=36500),
-#   schema=[
-#     Field(name="number_of_reviews", dtype=Int64),
-#     Field(name="number_of_reviews_ltm", dtype=Int64),
-#     Field(name="number_of_reviews_l30d", dtype=Int64),
-#     Field(name="review_scores_rating", dtype=Float64),
-#     Field(name="review_scores_accuracy", dtype=Float64),
-#     Field(name="review_scores_cleanliness", dtype=Float64),
-#     Field(name="review_scores_checkin", dtype=Float64),
-#     Field(name="review_scores_communication", dtype=Float64),
-#     Field(name="review_scores_value", dtype=Float64),
-#     Field(name="reviews_per_month", dtype=Float64),
-#     Field(name="review_event_timestamp", dtype=String)
-#   ],
-#   online=False,
-#   source=review_source,
-#   tags={}
-# )
-
-# fact_fv = FeatureView(
-#   name="fact_feature_view",
-#   description="Feature view for fact table",
-#   entities=[entity_host_id],
-#   ttl=timedelta(days=36500),
-#   schema=[
-#     Field(name="minimum_nights", dtype=Float64),
-#     Field(name="maximum_nights", dtype=Int64),
-#     Field(name="minimum_minimum_nights", dtype=Float64),
-#     Field(name="maximum_minimum_nights", dtype=Float64),
-#     Field(name="minimum_maximum_nights", dtype=Float64),
-#     Field(name="maximum_maximum_nights", dtype=Float64),
-#     Field(name="minimum_nights_avg_ntm", dtype=Float64),
-#     Field(name="maximum_nights_avg_ntm", dtype=Float64),
-#     Field(name="calculated_host_listings_count", dtype=Int64),
-#     Field(name="calculated_host_listings_count_entire_homes", dtype=Int64),
-#     Field(name="calculated_host_listings_count_private_rooms", dtype=Int64),
-#     Field(name="calculated_host_listings_count_shared_rooms", dtype=Int64),
-#     Field(name="fact_event_timestamp", dtype=String)
-#   ],
-#   online=False,
-#   source=fact_source,
-#   tags={}
-# )
+fact_fv = FeatureView(
+  name="fact_feature_view",
+  description="Feature view for fact table",
+  entities=[entity_id],
+  ttl=timedelta(days=36500),
+  schema=[
+    Field(name="minimum_nights", dtype=Float64),
+    Field(name="maximum_nights", dtype=Int64),
+    Field(name="minimum_minimum_nights", dtype=Float64),
+    Field(name="maximum_minimum_nights", dtype=Float64),
+    Field(name="minimum_maximum_nights", dtype=Float64),
+    Field(name="maximum_maximum_nights", dtype=Float64),
+    Field(name="minimum_nights_avg_ntm", dtype=Float64),
+    Field(name="maximum_nights_avg_ntm", dtype=Float64),
+    Field(name="calculated_host_listings_count", dtype=Int64),
+    Field(name="calculated_host_listings_count_entire_homes", dtype=Int64),
+    Field(name="calculated_host_listings_count_private_rooms", dtype=Int64),
+    Field(name="calculated_host_listings_count_shared_rooms", dtype=Int64),
+  ],
+  online=False,
+  source=fact_source,
+  tags={}
+)
