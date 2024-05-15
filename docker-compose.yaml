@@ -145,6 +145,24 @@ services:
     networks:
       - net
 
+  # Jupyter Notebook
+  jupyter_notebook:
+    build:
+      context: ./configs/jupyter
+      dockerfile: Dockerfile
+    container_name: jupyter_notebook
+    image: jupyter_notebook:latest
+    volumes:
+      - ./logs/jupyter_notebook:/home/jovyan/logs
+      - ./src/feast:/home/jovyan/feast
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+    env_file:
+      - ./.env
+    ports:
+      - "8888:8888"
+    networks:
+      - net
+
 networks:
   net:
     driver: bridge
