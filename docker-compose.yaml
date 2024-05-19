@@ -1,6 +1,8 @@
 version: "3.9"
 
 services:
+
+  ###################################################################### DAGSTER ######################################################################
   # Dagster
   dagster:
     build:
@@ -13,6 +15,8 @@ services:
   dagster_dagit:
     depends_on:
       - dagster_postgres
+      - pipeline
+      - mtl_pipeline
     image: dagster:latest
     entrypoint:
       - dagster-webserver
@@ -47,29 +51,12 @@ services:
       - ./.env
     networks:
       - net
+    depends_on:
+      - dagster_postgres
+      - pipeline
+      - mtl_pipeline
 
-  # Postgres for Dagster
-  dagster_postgres:
-    build:
-      context: ./configs/postgres/dagster
-      dockerfile: Dockerfile
-    container_name: dagster_postgres
-    image: dagster_postgres:latest
-    volumes:
-      - ./logs/dagster_postgres:/var/lib/postgresql/data
-    env_file:
-      - ./.env
-    environment:
-      POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
-      POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
-      POSTGRES_HOST: ${DAGSTER_POSTGRES_HOST}
-      POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
-    ports:
-      - "5432:5432"
-    networks:
-      - net
-
+  ###################################################################### MINIO ######################################################################
   # Minio server for data storage
   minio_server:
     build:
@@ -105,6 +92,7 @@ services:
     networks:
       - net
 
+  ###################################################################### PIPELINES ######################################################################
   # Data ETL Pipeline
   pipeline:
     build:
@@ -116,14 +104,53 @@ services:
     volumes:
       - ./src/data/pipeline:/opt/dagster/app
     ports:
-      - "4040:4040"
       - "4000:4000"
     env_file:
       - ./.env
     networks:
      - net
 
-  # Postgres for Feast
+  # Pipeline for materializing offline store into online store
+  mtl_pipeline:
+    build:
+      context: ./src/data/mtl_pipeline
+      dockerfile: Dockerfile
+    container_name: mtl_pipeline
+    image: mtl_pipeline:latest
+    user: root
+    volumes:
+      - ./src/data/mtl_pipeline:/opt/dagster/app
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./.env
+    networks:
+     - net
+
+  ###################################################################### DATABASES ######################################################################
+  # Postgres for Dagster
+  dagster_postgres:
+    build:
+      context: ./configs/postgres/dagster
+      dockerfile: Dockerfile
+    container_name: dagster_postgres
+    image: dagster_postgres:latest
+    volumes:
+      - ./logs/dagster_postgres:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
+      POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${DAGSTER_POSTGRES_HOST}
+      POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
+    ports:
+      - "5432:5432"
+    networks:
+      - net
+
+  # Postgres for Feast offline store
   feast_postgres:
     build:
       context: ./configs/postgres/feast
@@ -145,7 +172,23 @@ services:
     networks:
       - net
 
-  # Jupyter Notebook
+  # Redis for Feast online store
+  feast_redis:
+    build:
+      context: ./configs/redis
+      dockerfile: Dockerfile
+    container_name: feast_redis
+    image: feast_redis:latest
+    volumes:
+      - ./logs/feast_redis:/data
+    env_file:
+      - ./.env
+    ports:
+      - "6379:6379"
+    networks:
+      - net
+
+  ###################################################################### TEST ######################################################################
   jupyter_notebook:
     build:
       context: ./configs/jupyter

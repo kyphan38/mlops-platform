@@ -5,3 +5,13 @@ load_from:
       host: pipeline
       port: 4000
       location_name: "pipeline"
+
+  - grpc_server:
+      host: mtl_pipeline
+      port: 4001
+      location_name: "mtl_pipeline"
+
+#   - grpc_server:
+#       host: training_pipeline
+#       port: 4002
+#       location_name: "training_pipeline"

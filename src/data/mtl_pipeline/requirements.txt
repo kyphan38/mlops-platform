@@ -1,0 +1,6 @@
+dagit==1.7.3
+dagster==1.7.3
+dagster-postgres==0.23.3
+dagster-shell==0.23.3
+feast==0.37.1
+redis==5.0.4
