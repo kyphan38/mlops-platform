@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   ###################################################################### DAGSTER ######################################################################
@@ -127,6 +125,22 @@ services:
     networks:
      - net
 
+  training_pipeline:
+    build:
+      context: ./src/data/training_pipeline
+      dockerfile: Dockerfile
+    container_name: training_pipeline
+    image: training_pipeline:latest
+    user: root
+    volumes:
+      - ./src/data/training_pipeline:/opt/dagster/app
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./.env
+    networks:
+     - net
+
   ###################################################################### DATABASES ######################################################################
   # Postgres for Dagster
   dagster_postgres:
@@ -187,6 +201,49 @@ services:
       - "6379:6379"
     networks:
       - net
+
+  mlflow_postgres:
+    build:
+      context: ./configs/postgres/mlflow
+      dockerfile: Dockerfile
+    container_name: mlflow_postgres
+    image: mlflow_postgres:latest
+    volumes:
+      - ./logs/mlflow_postgres:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${MLFLOW_POSTGRES_DB}
+      POSTGRES_USER: ${MLFLOW_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MLFLOW_POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${MLFLOW_POSTGRES_HOST}
+      POSTGRES_PORT: ${MLFLOW_POSTGRES_PORT}
+    ports:
+      - "5434:5432"
+    networks:
+      - net
+
+  ###################################################################### TRACKING ######################################################################
+  mlflow:
+    build:
+      context: ./configs/mlflow
+      dockerfile: Dockerfile
+    container_name: mlflow
+    image: mlflow:latest
+    volumes:
+      - ./logs/mlflow:/mlflow/mlruns
+    env_file:
+      - ./.env
+    environment:
+      MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
+      MLFLOW_TRACKING_SQL_ALCHEMY_CONN: postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
+    command: mlflow server --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB} --default-artifact-root /mlflow/mlruns --host 0.0.0.0
+    ports:
+      - "5000:5000"
+    networks:
+      - net
+    depends_on:
+      - mlflow_postgres
 
   ###################################################################### TEST ######################################################################
   jupyter_notebook:

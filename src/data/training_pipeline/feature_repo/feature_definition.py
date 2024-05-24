@@ -28,7 +28,7 @@ listing_fv = FeatureView(
     Field(name="availability_365", dtype=Float64),
     Field(name="instant_bookable", dtype=Int64),
   ],
-  online=False,
+  online=True,
   source=listing_source,
   tags={}
 )
@@ -48,7 +48,7 @@ host_fv = FeatureView(
     Field(name="host_has_profile_pic", dtype=Float64),
     Field(name="host_identity_verified", dtype=Float64),
   ],
-  online=False,
+  online=True,
   source=host_source,
   tags={}
 )
@@ -70,7 +70,7 @@ review_fv = FeatureView(
     Field(name="review_scores_value", dtype=Float64),
     Field(name="reviews_per_month", dtype=Float64),
   ],
-  online=False,
+  online=True,
   source=review_source,
   tags={}
 )
@@ -94,7 +94,7 @@ fact_fv = FeatureView(
     Field(name="calculated_host_listings_count_private_rooms", dtype=Int64),
     Field(name="calculated_host_listings_count_shared_rooms", dtype=Int64),
   ],
-  online=False,
+  online=True,
   source=fact_source,
   tags={}
 )

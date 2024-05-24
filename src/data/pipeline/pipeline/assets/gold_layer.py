@@ -1,6 +1,8 @@
 import pandas as pd
 from dagster import asset, AssetIn, Output
 
+from ..functions.checking import df_description
+
 gold_data_dir = "./data/gold"
 compute_kind = "Pandas"
 layer = "gold_layer"
@@ -71,6 +73,7 @@ def listing_table(context,
                    ) -> Output:
 
   df = listing_table[listing_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -93,6 +96,7 @@ def host_table(context,
                    ) -> Output:
 
   df = host_table[host_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -115,6 +119,7 @@ def review_table(context,
                    ) -> Output:
 
   df = review_table[review_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -137,6 +142,7 @@ def fact_table(context,
                    ) -> Output:
 
   df = fact_table[fact_cols]
+  df_description(context, df)
 
   return Output(
     df,

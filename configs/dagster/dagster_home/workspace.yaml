@@ -1,5 +1,4 @@
 # Define how to access and load the code
-
 load_from:
   - grpc_server:
       host: pipeline
@@ -11,7 +10,7 @@ load_from:
       port: 4001
       location_name: "mtl_pipeline"
 
-#   - grpc_server:
-#       host: training_pipeline
-#       port: 4002
-#       location_name: "training_pipeline"
+  - grpc_server:
+      host: training_pipeline
+      port: 4002
+      location_name: "training_pipeline"
