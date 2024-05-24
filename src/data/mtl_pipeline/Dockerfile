@@ -4,18 +4,18 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 
-# Update packages and install curl
-RUN apt-get update --yes && \
-  apt-get install --yes --no-install-recommends curl awscli tree && \
+# Update and install some necessary packges
+RUN apt-get update -y && \
+  apt-get install -y --no-install-recommends curl awscli tree && \
   apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+  rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
 # Add repository code
 WORKDIR /opt/dagster/app
-COPY requirements.txt /opt/dagster/app/
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-COPY . /opt/dagster/app/pipeline
+COPY ./requirements.txt /opt/dagster/app/
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir -r requirements.txt && \
+  rm -rf ~/.cache/pip
 
 # CMD allows this to be overridden from run launchers or executors that want to run other commands against your repository
 CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4001", "-m", "mtl_pipeline"]

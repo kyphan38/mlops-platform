@@ -3,19 +3,30 @@ services:
   ###################################################################### DAGSTER ######################################################################
   # Dagster
   dagster:
+    image: dagster:latest
     build:
       context: ./configs/dagster
       dockerfile: Dockerfile
     container_name: dagster
-    image: dagster:latest
 
   # Dagster dagit: web interface
   dagster_dagit:
+    image: dagster:latest
+    container_name: dagster_dagit
+    ports:
+      - "3001:3001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./configs/dagster/dagster_home:/opt/dagster/dagster_home
+    env_file:
+      - ./.env
+    networks:
+      - net
     depends_on:
       - dagster_postgres
       - pipeline
       - mtl_pipeline
-    image: dagster:latest
+      - training_pipeline
     entrypoint:
       - dagster-webserver
       - -h
@@ -24,23 +35,10 @@ services:
       - "3001"
       - -w
       - workspace.yaml
-    container_name: dagster_dagit
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./configs/dagster/dagster_home:/opt/dagster/dagster_home
-    env_file:
-      - ./.env
-    ports:
-      - "3001:3001"
-    networks:
-      - net
 
   # Dagster daemon: Schedule and orchestrate pipeline executions
   dagster_daemon:
     image: dagster:latest
-    entrypoint:
-      - dagster-daemon
-      - run
     container_name: dagster_daemon
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -53,56 +51,59 @@ services:
       - dagster_postgres
       - pipeline
       - mtl_pipeline
+    entrypoint:
+      - dagster-daemon
+      - run
 
   ###################################################################### MINIO ######################################################################
   # Minio server for data storage
   minio_server:
+    image: minio_server:latest
     build:
       context: ./configs/minio/server
       dockerfile: Dockerfile
-    hostname: minio
     container_name: minio_server
-    image: minio_server:latest
+    hostname: minio
     ports:
       - "9000:9000"
       - "9001:9001"
-    command: ["server", "/data", "--console-address", ":9001"]
     volumes:
       - ./logs/minio:/data
     env_file:
       - ./.env
     networks:
       - net
+    command: ["server", "/data", "--console-address", ":9001"]
 
   # Minio client for UNIX command
   minio_client:
-    depends_on:
-      - minio_server
+    image: minio_client:latest
     build:
       context: ./configs/minio/client
       dockerfile: Dockerfile
-    entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 minio minio123); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/warehouse; /usr/bin/mc policy set public minio/warehouse; exit 0;"
-    hostname: mc
     container_name: minio_client
-    image: minio_client:latest
+    hostname: mc
     env_file:
       - ./.env
     networks:
       - net
+    depends_on:
+      - minio_server
+    entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 minio minio123); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/warehouse; /usr/bin/mc policy set public minio/warehouse; exit 0;"
 
   ###################################################################### PIPELINES ######################################################################
   # Data ETL Pipeline
   pipeline:
+    image: pipeline:latest
     build:
       context: ./src/data/pipeline
       dockerfile: Dockerfile
     container_name: pipeline
-    image: pipeline:latest
     user: root
-    volumes:
-      - ./src/data/pipeline:/opt/dagster/app
     ports:
       - "4000:4000"
+    volumes:
+      - ./src/data/pipeline:/opt/dagster/app
     env_file:
       - ./.env
     networks:
@@ -110,32 +111,33 @@ services:
 
   # Pipeline for materializing offline store into online store
   mtl_pipeline:
+    image: mtl_pipeline:latest
     build:
       context: ./src/data/mtl_pipeline
       dockerfile: Dockerfile
     container_name: mtl_pipeline
-    image: mtl_pipeline:latest
     user: root
-    volumes:
-      - ./src/data/mtl_pipeline:/opt/dagster/app
     ports:
       - "4001:4001"
+    volumes:
+      - ./src/data/mtl_pipeline:/opt/dagster/app
     env_file:
       - ./.env
     networks:
      - net
 
+  # Pipeline for training model
   training_pipeline:
+    image: training_pipeline:latest
     build:
       context: ./src/data/training_pipeline
       dockerfile: Dockerfile
     container_name: training_pipeline
-    image: training_pipeline:latest
     user: root
-    volumes:
-      - ./src/data/training_pipeline:/opt/dagster/app
     ports:
       - "4002:4002"
+    volumes:
+      - ./src/data/training_pipeline:/opt/dagster/app
     env_file:
       - ./.env
     networks:
@@ -144,124 +146,123 @@ services:
   ###################################################################### DATABASES ######################################################################
   # Postgres for Dagster
   dagster_postgres:
+    image: dagster_postgres:latest
     build:
       context: ./configs/postgres/dagster
       dockerfile: Dockerfile
     container_name: dagster_postgres
-    image: dagster_postgres:latest
+    ports:
+      - "5432:5432"
     volumes:
       - ./logs/dagster_postgres:/var/lib/postgresql/data
-    env_file:
-      - ./.env
     environment:
       POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
       POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
       POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
       POSTGRES_HOST: ${DAGSTER_POSTGRES_HOST}
       POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
-    ports:
-      - "5432:5432"
     networks:
       - net
 
   # Postgres for Feast offline store
   feast_postgres:
+    image: feast_postgres:latest
     build:
       context: ./configs/postgres/feast
       dockerfile: Dockerfile
     container_name: feast_postgres
-    image: feast_postgres:latest
+    ports:
+      - "5433:5432"
     volumes:
       - ./logs/feast_postgres:/var/lib/postgresql/data
-    env_file:
-      - ./.env
     environment:
       POSTGRES_DB: ${FEAST_POSTGRES_DB}
       POSTGRES_USER: ${FEAST_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FEAST_POSTGRES_PASSWORD}
       POSTGRES_HOST: ${FEAST_POSTGRES_HOST}
       POSTGRES_PORT: ${FEAST_POSTGRES_PORT}
-    ports:
-      - "5433:5432"
+    env_file:
+      - ./.env
     networks:
       - net
 
   # Redis for Feast online store
   feast_redis:
+    image: feast_redis:latest
     build:
       context: ./configs/redis
       dockerfile: Dockerfile
     container_name: feast_redis
-    image: feast_redis:latest
+    ports:
+      - "6379:6379"
     volumes:
       - ./logs/feast_redis:/data
     env_file:
       - ./.env
-    ports:
-      - "6379:6379"
     networks:
       - net
 
+  # Postgres for MLflow
   mlflow_postgres:
+    image: mlflow_postgres:latest
     build:
       context: ./configs/postgres/mlflow
       dockerfile: Dockerfile
     container_name: mlflow_postgres
-    image: mlflow_postgres:latest
+    ports:
+      - "5434:5432"
     volumes:
       - ./logs/mlflow_postgres:/var/lib/postgresql/data
-    env_file:
-      - ./.env
     environment:
       POSTGRES_DB: ${MLFLOW_POSTGRES_DB}
       POSTGRES_USER: ${MLFLOW_POSTGRES_USER}
       POSTGRES_PASSWORD: ${MLFLOW_POSTGRES_PASSWORD}
       POSTGRES_HOST: ${MLFLOW_POSTGRES_HOST}
       POSTGRES_PORT: ${MLFLOW_POSTGRES_PORT}
-    ports:
-      - "5434:5432"
+    env_file:
+      - ./.env
     networks:
       - net
 
   ###################################################################### TRACKING ######################################################################
   mlflow:
+    image: mlflow:latest
     build:
       context: ./configs/mlflow
       dockerfile: Dockerfile
     container_name: mlflow
-    image: mlflow:latest
+    ports:
+      - "5000:5000"
     volumes:
       - ./logs/mlflow:/mlflow/mlruns
-    env_file:
-      - ./.env
     environment:
       MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
       MLFLOW_TRACKING_SQL_ALCHEMY_CONN: postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
-    command: mlflow server --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB} --default-artifact-root /mlflow/mlruns --host 0.0.0.0
-    ports:
-      - "5000:5000"
+    env_file:
+      - ./.env
     networks:
       - net
     depends_on:
       - mlflow_postgres
+    command: mlflow server --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB} --default-artifact-root /mlflow/mlruns --host 0.0.0.0
 
   ###################################################################### TEST ######################################################################
   jupyter_notebook:
+    image: jupyter_notebook:latest
     build:
       context: ./configs/jupyter
       dockerfile: Dockerfile
     container_name: jupyter_notebook
-    image: jupyter_notebook:latest
+    ports:
+      - "8888:8888"
     volumes:
       - ./logs/jupyter_notebook:/home/jovyan/logs
       - ./src/feast:/home/jovyan/feast
-    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
     env_file:
       - ./.env
-    ports:
-      - "8888:8888"
     networks:
       - net
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
 
 networks:
   net:
