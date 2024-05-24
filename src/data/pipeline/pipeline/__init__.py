@@ -30,14 +30,6 @@ FEAST_POSTGRES_CONFIG = {
   "password": os.getenv("FEAST_POSTGRES_PASSWORD", "admin123"),
 }
 
-# FEAST_POSTGRES_CONFIG = {
-#   "host": os.getenv("DAGSTER_POSTGRES_HOST", "dagster_postgres"),
-#   "port": os.getenv("DAGSTER_POSTGRES_PORT", "5432"),
-#   "database": os.getenv("DAGSTER_POSTGRES_DB", "dagster_postgres"),
-#   "user": os.getenv("DAGSTER_POSTGRES_USER", "admin"),
-#   "password": os.getenv("DAGSTER_POSTGRES_PASSWORD", "admin123"),
-# }
-
 # Initialize definitions with dynamically generated assets
 defs = Definitions(
   assets=generate_assets("minio_io_manager") +

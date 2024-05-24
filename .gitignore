@@ -15,3 +15,8 @@
 
 # Data source
 /src/data/pipeline/data
+
+# Feast
+*parquet
+*db
+.ipynb_checkpoints/

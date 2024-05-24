@@ -1,6 +1,8 @@
 import pandas as pd
 from dagster import asset, AssetIn, Output
 
+from ..functions.checking import df_description
+
 gold_data_dir = "./data/gold"
 compute_kind = "Pandas"
 layer = "gold_layer"
@@ -35,21 +37,29 @@ listing_cols = ['id', 'host_id', 'property_type', 'room_type',
                 # 'bathrooms_text',
                 'bedrooms', 'beds', 'amenities', 'price', 'has_availability',
                 'availability_30', 'availability_60', 'availability_90', 'availability_365',
-                'instant_bookable']
+                'instant_bookable',
+                'event_timestamp'
+                ]
 
 host_cols = ['host_id', 'host_response_rate', 'host_acceptance_rate', 'host_is_superhost',
              'host_listings_count', 'host_total_listings_count', 'host_verifications',
-             'host_has_profile_pic', 'host_identity_verified']
+             'host_has_profile_pic', 'host_identity_verified',
+             'event_timestamp'
+             ]
 
 review_cols = ['id', 'number_of_reviews', 'number_of_reviews_ltm', 'number_of_reviews_l30d',
                'review_scores_rating', 'review_scores_accuracy', 'review_scores_cleanliness', 'review_scores_checkin',
-               'review_scores_communication', 'review_scores_location', 'review_scores_value', 'reviews_per_month']
+               'review_scores_communication', 'review_scores_location', 'review_scores_value', 'reviews_per_month',
+               'event_timestamp'
+               ]
 
 fact_cols = ['id', 'minimum_nights', 'maximum_nights', 'minimum_minimum_nights',
              'maximum_minimum_nights', 'minimum_maximum_nights', 'maximum_maximum_nights',
              'minimum_nights_avg_ntm', 'maximum_nights_avg_ntm',
              'calculated_host_listings_count', 'calculated_host_listings_count_entire_homes',
-             'calculated_host_listings_count_private_rooms', 'calculated_host_listings_count_shared_rooms']
+             'calculated_host_listings_count_private_rooms', 'calculated_host_listings_count_shared_rooms',
+             'event_timestamp'
+             ]
 
 @asset(
   io_manager_key="minio_io_manager",
@@ -63,6 +73,7 @@ def listing_table(context,
                    ) -> Output:
 
   df = listing_table[listing_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -85,6 +96,7 @@ def host_table(context,
                    ) -> Output:
 
   df = host_table[host_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -107,6 +119,7 @@ def review_table(context,
                    ) -> Output:
 
   df = review_table[review_cols]
+  df_description(context, df)
 
   return Output(
     df,
@@ -129,6 +142,7 @@ def fact_table(context,
                    ) -> Output:
 
   df = fact_table[fact_cols]
+  df_description(context, df)
 
   return Output(
     df,

@@ -1,0 +1,19 @@
+project: feature_store_mlops
+
+registry: ./data/registry.db
+provider: local
+
+offline_store:
+  type: postgres
+  host: ${FEAST_POSTGRES_HOST}
+  port: ${FEAST_POSTGRES_PORT}
+  database: ${FEAST_POSTGRES_DB}
+  user: ${FEAST_POSTGRES_USER}
+  password: ${FEAST_POSTGRES_PASSWORD}
+  db_schema: public
+
+online_store:
+  type: redis
+  connection_string: "feast_redis:6379"
+
+entity_key_serialization_version: 2
