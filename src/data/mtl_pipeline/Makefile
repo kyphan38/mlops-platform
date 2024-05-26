@@ -2,5 +2,5 @@ SHELL=/bin/bash
 
 ENV_FILE="./deployment/.env"
 
-deploy_feature_repo:
+deploy-feature-repo:
 	source ${ENV_FILE} && bash deployment/deploy.sh feature_repo
