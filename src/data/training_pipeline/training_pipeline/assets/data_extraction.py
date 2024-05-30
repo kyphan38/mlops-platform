@@ -64,7 +64,7 @@ def data_extraction(context):
   df = pd.merge(df, fact_df, on="id", how="left").drop_duplicates(subset=["id"])
 
   # Save data locally
-  os.makedirs("../data")
-  df.to_csv("../data/dataset.csv", index=False)
+  # os.makedirs("../data")
+  # df.to_csv("../data/dataset.csv", index=False)
 
   return df

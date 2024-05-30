@@ -14,7 +14,7 @@ layer = "training_layer"
 )
 def data_validation(context, df):
 
-  if df_description(df)==True:
+  if df_description(context, df)==True:
     context.log.info("Data is valid")
     return df
   else:
