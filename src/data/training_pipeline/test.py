@@ -1,25 +1,24 @@
-
-
 import pandas as pd
-from feast import FeatureStore
+import os
 from sqlalchemy import create_engine
-from sklearn.preprocessing import OrdinalEncoder
 from concurrent.futures import ThreadPoolExecutor
+
+from feast import FeatureStore
 import mlflow
 import mlflow.sklearn
 
-from data.training_pipeline.training_pipeline.functions.checking import df_description
-
-import pandas as pd
+from sklearn.preprocessing import OrdinalEncoder, RobustScaler, PolynomialFeatures
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import RobustScaler
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, BayesianRidge, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import PolynomialFeatures
 
-from feature_selection import listing_features, host_features, review_features, fact_features
+from training_pipeline.utils.feature_vars import listing_features, host_features, review_features, fact_features
+from training_pipeline.utils.feast import query_data, get_historical_features
+from training_pipeline.utils.checking import df_description
+from training_pipeline.utils.outliers import outliers_handling
+from training_pipeline.utils.encoding import data_encoding
 
 db_config = {
   'user': 'admin',
@@ -31,13 +30,7 @@ db_config = {
 
 mlflow.set_tracking_uri("http://mlflow:5000")
 
-def query_data(engine, query):
-  return pd.read_sql(query, engine)
-
-def get_historical_features(fs, entity_df, features):
-  return fs.get_historical_features(entity_df=entity_df, features=features).to_df()
-
-def ingest_data():
+def data_extraction():
   fs = FeatureStore(repo_path="./feature_repo")
 
   connection_string = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
@@ -73,19 +66,40 @@ def ingest_data():
   print(f"Length fact_df {len(fact_df)}")
   print(f"Length df {len(df)}")
 
-  df_description(df)
+  os.makedirs("./data")
+  df.to_csv("./data/data.csv", index=False)
 
   return df
 
-def encoding_applying(df):
-  df.drop('property_type', axis=1, inplace=True)
-  df.drop('room_type', axis=1, inplace=True)
-  df.drop('host_verifications', axis=1, inplace=True)
-  df.drop('amenities', axis=1, inplace=True)
+import pandas as pd
+
+def data_validation(df):
+  report = {}
+
+  # Check for missing values
+  missing_values = df.isnull().sum()
+  report['missing_values'] = missing_values[missing_values > 0].to_dict()
+
+  # Check for duplicate rows
+  duplicate_rows = df.duplicated().sum()
+  report['duplicate_rows'] = duplicate_rows
+
+  # Check column data types
+  data_types = df.dtypes.to_dict()
+  report['data_types'] = {col: str(dtype) for col, dtype in data_types.items()}
+
+  return report
+
+def data_transforming(df):
+  # Outliers handling
+  df = outliers_handling(df)
+
+  # Data encoding
+  df = data_encoding(df)
 
   return df
 
-def training_data(df):
+def model_training(df):
   features = df.drop('price', axis=1)
   target = df['price']
   X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.3, random_state=42)
@@ -100,9 +114,9 @@ def training_data(df):
     'Linear Regression': (LinearRegression(), {}),
     'Ridge Regression': (Ridge(), {'alpha': [0.001]}),
     'Lasso Regression': (Lasso(), {'alpha': [0.0001]}),
-    'Bayesian Ridge Regression': (BayesianRidge(), {'alpha_1': [1e-6], 'lambda_1': [1e-6]}),
-    'ElasticNet Regression': (ElasticNet(), {'alpha': [0.001, 0.01], 'l1_ratio': [0.2]}),
-    'Decision Tree Regression': (DecisionTreeRegressor(), {'max_depth': [3]}),
+    # 'Bayesian Ridge Regression': (BayesianRidge(), {'alpha_1': [1e-6], 'lambda_1': [1e-6]}),
+    # 'ElasticNet Regression': (ElasticNet(), {'alpha': [0.001, 0.01], 'l1_ratio': [0.2]}),
+    # 'Decision Tree Regression': (DecisionTreeRegressor(), {'max_depth': [3]}),
   }
 
   # Conduct hyperparameter tuning for each model
@@ -128,6 +142,7 @@ def training_data(df):
     print(f"{result[0]} - Best Params: {result[1]} - RMSE: {result[2]}, R^2: {result[3]}")
 
 if __name__ == "__main__":
-  df = ingest_data()
-  df = encoding_applying(df)
-  training_data(df)
+  df = data_extraction()
+  rp = data_validation(df)
+  df = data_transforming(df)
+  model_training(df)

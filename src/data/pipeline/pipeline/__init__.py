@@ -10,32 +10,49 @@ from .assets.warehouse_layer import listing_table as wh_listing_table, host_tabl
 from .resources.minio_io_manager import MinIOIOManager
 from .resources.psql_io_manager import PostgreSQLIOManager
 
+# Import environment variables
 from dotenv import load_dotenv
 import os
-load_dotenv()
+load_dotenv("../.env")
 
 # Setting default values in case environment variables are missing
 MINIO_CONFIG = {
-  "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL", "minio:9000"),
-  "minio_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "minio"),
-  "minio_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "minio123"),
-  "minio_bucket": os.getenv("MINIO_BUCKET", "warehouse")
+  "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL"),
+  "minio_access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
+  "minio_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+  "minio_bucket": os.getenv("MINIO_BUCKET")
 }
 
 FEAST_POSTGRES_CONFIG = {
-  "host": os.getenv("FEAST_POSTGRES_HOST", "feast_postgres"),
-  "port": os.getenv("FEAST_POSTGRES_PORT", "5432"),
-  "database": os.getenv("FEAST_POSTGRES_DB", "feast_postgres"),
-  "user": os.getenv("FEAST_POSTGRES_USER", "admin"),
-  "password": os.getenv("FEAST_POSTGRES_PASSWORD", "admin123"),
+  "host": os.getenv("FEAST_POSTGRES_HOST"),
+  "port": os.getenv("FEAST_POSTGRES_PORT"),
+  "database": os.getenv("FEAST_POSTGRES_DB"),
+  "user": os.getenv("FEAST_POSTGRES_USER"),
+  "password": os.getenv("FEAST_POSTGRES_PASSWORD"),
 }
 
 # Initialize definitions with dynamically generated assets
 defs = Definitions(
   assets=generate_assets("minio_io_manager") +
-  [silver_location_table, silver_listing_table, silver_host_table, silver_review_table, silver_fact_table] +
-  [gold_listing_table, gold_host_table, gold_review_table, gold_fact_table] +
-  [wh_listing_table, wh_host_table, wh_review_table, wh_fact_table],
+  [
+    silver_location_table,
+    silver_listing_table,
+    silver_host_table,
+    silver_review_table,
+    silver_fact_table
+  ] +
+  [
+    gold_listing_table,
+    gold_host_table,
+    gold_review_table,
+    gold_fact_table
+  ] +
+  [
+    wh_listing_table,
+    wh_host_table,
+    wh_review_table,
+    wh_fact_table
+  ],
   resources={
     "minio_io_manager": MinIOIOManager(MINIO_CONFIG),
     "psql_io_manager": PostgreSQLIOManager(FEAST_POSTGRES_CONFIG)

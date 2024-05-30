@@ -257,7 +257,7 @@ services:
       - "8888:8888"
     volumes:
       - ./logs/jupyter_notebook:/home/jovyan/logs
-      - ./src/feast:/home/jovyan/feast
+      - ./src/data/mtl_pipeline/feature_repo:/home/jovyan/feature_repo
     env_file:
       - ./.env
     networks:

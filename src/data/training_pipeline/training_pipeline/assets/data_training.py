@@ -7,6 +7,13 @@ from concurrent.futures import ThreadPoolExecutor
 import mlflow
 import mlflow.sklearn
 
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import RobustScaler
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, BayesianRidge, ElasticNet
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split, GridSearchCV
+
 # from data.training_pipeline.training_pipeline.functions.checking import df_description
 
 # Database configuration
@@ -14,12 +21,7 @@ mlflow.set_tracking_uri("http://mlflow:5000")
 
 @asset(ins={"df": AssetIn("encoding_applying")})
 def training_data(context, df):
-  from sklearn.decomposition import PCA
-  from sklearn.preprocessing import RobustScaler
-  from sklearn.linear_model import LinearRegression, Ridge, Lasso, BayesianRidge, ElasticNet
-  from sklearn.tree import DecisionTreeRegressor
-  from sklearn.metrics import mean_squared_error, r2_score
-  from sklearn.model_selection import train_test_split, GridSearchCV
+
 
   features = df.drop('price', axis=1)
   target = df['price']
