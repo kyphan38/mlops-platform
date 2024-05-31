@@ -32,3 +32,9 @@
 *.pkl
 *.feast
 *.cache
+*.csv
+
+# Jenkins
+*agent/
+*nohup.out
+*remoting

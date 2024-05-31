@@ -235,12 +235,12 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - mlflow_artifacts:/mlflow/artifacts
+      # - mlflow_artifacts:/mlflow/artifacts
       - ./logs/mlflow:/mlflow/mlruns
     environment:
-      MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
       MLFLOW_TRACKING_SQL_ALCHEMY_CONN: postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
+      MLFLOW_S3_ENDPOINT_URL: ${MINIO_ENDPOINT_URL}
       MLFLOW_S3_IGNORE_TLS: true
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -253,14 +253,11 @@ services:
       - minio_server
       - minio_client
     command: >
-      bash -c "
-      chown -R 755 /mlflow/artifacts &&
       mlflow server
       --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
       --host 0.0.0.0
       --serve-artifacts
-      --default-artifact-root /mlflow/artifacts
-      "
+      --artifacts-destination s3://artifacts
 
   ###################################################################### TEST ######################################################################
   # Jupyter notebook for experiment
@@ -276,20 +273,43 @@ services:
       - ./logs/jupyter_notebook:/home/jovyan/logs
       - ./src/data/mtl_pipeline/feature_repo:/home/jovyan/feature_repo
       - ./src/jupyter:/home/jovyan
-      - mlflow_artifacts:/mlflow/artifacts
+      # - mlflow_artifacts:/mlflow/artifacts
     environment:
-      MLFLOW_TRACKING_URI: http://mlflow:5000
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_TRACKING_SQL_ALCHEMY_CONN: postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
+      MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
+      MLFLOW_S3_ENDPOINT_URL: ${MINIO_ENDPOINT_URL}
+      MLFLOW_S3_IGNORE_TLS: true
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     env_file:
       - ./.env
     networks:
       - net
     command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
 
+  ###################################################################### OPERATION ######################################################################
+  jenkins:
+    image: jenkins:latest
+    build:
+      context: ./configs/jenkins
+      dockerfile: Dockerfile
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./logs/jenkins_home:/var/jenkins_home
+      - .:/var/jenkins_home/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./.env
+    networks:
+      - net
+
 networks:
   net:
     driver: bridge
     name: net
 
-volumes:
-  mlflow_artifacts:
+# volumes:
+#   mlflow_artifacts:
