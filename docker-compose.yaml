@@ -89,7 +89,7 @@ services:
       - net
     depends_on:
       - minio_server
-    entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 minio minio123); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/warehouse; /usr/bin/mc policy set public minio/warehouse; exit 0;"
+    entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/${MINIO_BUCKET}; /usr/bin/mc policy set public minio/${MINIO_BUCKET}; /usr/bin/mc mb minio/${MLFLOW_BUCKET}; /usr/bin/mc policy set public minio/${MLFLOW_BUCKET}; exit 0;"
 
   ###################################################################### PIPELINES ######################################################################
   # Data ETL Pipeline
@@ -225,6 +225,7 @@ services:
       - net
 
   ###################################################################### TRACKING ######################################################################
+  # MLFlow
   mlflow:
     image: mlflow:latest
     build:
@@ -234,19 +235,35 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      - mlflow_artifacts:/mlflow/artifacts
       - ./logs/mlflow:/mlflow/mlruns
     environment:
       MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
       MLFLOW_TRACKING_SQL_ALCHEMY_CONN: postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_S3_IGNORE_TLS: true
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     env_file:
       - ./.env
     networks:
       - net
     depends_on:
       - mlflow_postgres
-    command: mlflow server --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB} --default-artifact-root /mlflow/mlruns --host 0.0.0.0
+      - minio_server
+      - minio_client
+    command: >
+      bash -c "
+      chown -R 755 /mlflow/artifacts &&
+      mlflow server
+      --backend-store-uri postgresql://${MLFLOW_POSTGRES_USER}:${MLFLOW_POSTGRES_PASSWORD}@${MLFLOW_POSTGRES_HOST}:${MLFLOW_POSTGRES_PORT}/${MLFLOW_POSTGRES_DB}
+      --host 0.0.0.0
+      --serve-artifacts
+      --default-artifact-root /mlflow/artifacts
+      "
 
   ###################################################################### TEST ######################################################################
+  # Jupyter notebook for experiment
   jupyter_notebook:
     image: jupyter_notebook:latest
     build:
@@ -258,6 +275,11 @@ services:
     volumes:
       - ./logs/jupyter_notebook:/home/jovyan/logs
       - ./src/data/mtl_pipeline/feature_repo:/home/jovyan/feature_repo
+      - ./src/jupyter:/home/jovyan
+      - mlflow_artifacts:/mlflow/artifacts
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
     env_file:
       - ./.env
     networks:
@@ -268,3 +290,6 @@ networks:
   net:
     driver: bridge
     name: net
+
+volumes:
+  mlflow_artifacts:

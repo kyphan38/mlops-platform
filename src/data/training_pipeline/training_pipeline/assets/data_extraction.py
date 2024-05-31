@@ -7,8 +7,8 @@ from sqlalchemy.engine import Engine
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 
-from ..utils.feature_vars import listing_features, host_features, review_features, fact_features
-from ..utils.feast import get_historical_features, query_data
+from ..utils.model.feature_vars import listing_features, host_features, review_features, fact_features
+from ..utils.model.feast import get_historical_features, query_data
 
 compute_kind = "Feast"
 layer = "training_layer"

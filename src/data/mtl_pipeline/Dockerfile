@@ -6,7 +6,7 @@ USER root
 
 # Update and install some necessary packges
 RUN apt-get update -y && \
-  apt-get install -y --no-install-recommends curl awscli tree && \
+  apt-get install -y --no-install-recommends curl awscli tree rsync build-essential && \
   apt-get clean && \
   rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 

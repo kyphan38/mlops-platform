@@ -3,8 +3,8 @@ from dagster import asset, AssetIn, AssetOut, multi_asset
 from sklearn.preprocessing import RobustScaler
 from sklearn.model_selection import train_test_split
 
-from ..utils.outliers import outliers_handling
-from ..utils.encoding import data_encoding
+from ..utils.model.outliers import outliers_handling
+from ..utils.model.encoding import data_encoding
 
 compute_kind = "Pandas"
 layer = "training_layer"

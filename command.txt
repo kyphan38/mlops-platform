@@ -1,0 +1,1 @@
+dagster asset materialize -m training_pipeline --select "*"

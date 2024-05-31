@@ -8,6 +8,10 @@ RUN apt-get update -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
+# Create folder for MLflow
+RUN mkdir /mlflow && \
+  chmod 777 -R /mlflow
+
 # Set working directory then copy and install configuration files
 WORKDIR /home/jovyan/
 COPY ./requirements.txt /home/jovyan/

@@ -1,7 +1,7 @@
 import pandas as pd
 from dagster import asset, AssetIn
 
-from ..utils.checking import df_description
+from ..utils.model.checking import df_description
 
 compute_kind = "Pandas"
 layer = "training_layer"
