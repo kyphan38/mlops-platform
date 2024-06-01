@@ -17,7 +17,7 @@ load_dotenv("../.env")
 
 # Setting default values in case environment variables are missing
 MINIO_CONFIG = {
-  "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL"),
+  "minio_endpoint_url": os.getenv("MINIO_ENDPOINT_URL_SUFFIX"),
   "minio_access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
   "minio_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
   "minio_bucket": os.getenv("MINIO_BUCKET")
