@@ -8,7 +8,7 @@ USER root
 RUN apt-get update -y && \
   apt-get install -y --no-install-recommends curl awscli tree && \
   apt-get clean && \
-  rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Add repository code
 WORKDIR /opt/dagster/app

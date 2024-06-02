@@ -6,7 +6,7 @@ USER root
 RUN apt-get update -y && \
   apt-get install -y --no-install-recommends curl && \
   apt-get clean && \
-  rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create folder for MLflow
 RUN mkdir /mlflow && \
