@@ -1,12 +1,11 @@
 from dagster import job, Definitions
-from .assets.data_ingesting import ingest_data
-from .assets.data_transforming import encoding_applying
-from .assets.data_training import training_data
+
+from .assets.data_extraction import data_extraction
+from .assets.data_validation import data_validation
+from .assets.data_preparation import data_preparation
+from .assets.model_training import model_training, model_validation, model_exporting
 
 defs = Definitions(
-  assets=[ingest_data, encoding_applying, training_data],
-  # resources={
-  #   "minio_io_manager": MinIOIOManager(MINIO_CONFIG),
-  #   "psql_io_manager": PostgreSQLIOManager(FEAST_POSTGRES_CONFIG)
-  # }
+  assets=[data_extraction] + [data_validation] + [data_preparation]
+  + [model_training, model_validation, model_exporting]
 )

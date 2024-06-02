@@ -19,4 +19,24 @@
 # Feast
 *parquet
 *db
-.ipynb_checkpoints/
+.ipynb_checkpoints
+
+# Jupyter Notebook
+*.ipynb_checkpoints
+*.ipython
+*.jupyter
+*.local
+*.npm
+*.bash_history
+*testing_model_artifacts
+*.pkl
+*.feast
+*.cache
+*.csv
+
+# Jenkins
+agent*
+*nohup.out
+*remoting
+secret-file
+workspace

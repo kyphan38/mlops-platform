@@ -1,15 +1,22 @@
 FROM python:3.12-slim
 
-# Set DAGSTER_HOME and setup for Dagster instance
 ENV DAGSTER_HOME=/opt/dagster/dagster_home
+
+# Setup for Dagster instance
 RUN mkdir -p ${DAGSTER_HOME} && \
   mkdir -p ${DAGSTER_HOME}/storage && \
   mkdir -p ${DAGSTER_HOME}/compute_logs && \
   mkdir -p ${DAGSTER_HOME}/local_artifact_storage
 
-RUN apt-get update && apt-get install -y curl iputils-ping
+# Update and install some necessary packges
+RUN apt-get update -y && \
+  apt-get install -y --no-install-recommends curl && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Set working directory then copy and install configuration files
 WORKDIR ${DAGSTER_HOME}
 COPY ./requirements.txt ${DAGSTER_HOME}
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir -r requirements.txt && \
+  rm -rf ~/.cache/pip

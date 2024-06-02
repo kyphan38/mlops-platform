@@ -6,7 +6,6 @@ listing_features = [
   "listing_feature_view:bathrooms",
   "listing_feature_view:bedrooms",
   "listing_feature_view:beds",
-  "listing_feature_view:amenities",
   "listing_feature_view:price",
   "listing_feature_view:has_availability",
   "listing_feature_view:availability_30",
@@ -17,6 +16,7 @@ listing_features = [
 ]
 
 host_features = [
+  "host_feature_view:host_response_time",
   "host_feature_view:host_response_rate",
   "host_feature_view:host_acceptance_rate",
   "host_feature_view:host_is_superhost",
@@ -36,6 +36,7 @@ review_features = [
   "review_feature_view:review_scores_cleanliness",
   "review_feature_view:review_scores_checkin",
   "review_feature_view:review_scores_communication",
+  "review_feature_view:review_scores_location",
   "review_feature_view:review_scores_value",
   "review_feature_view:reviews_per_month",
 ]
@@ -49,8 +50,4 @@ fact_features = [
   "fact_feature_view:maximum_maximum_nights",
   "fact_feature_view:minimum_nights_avg_ntm",
   "fact_feature_view:maximum_nights_avg_ntm",
-  "fact_feature_view:calculated_host_listings_count",
-  "fact_feature_view:calculated_host_listings_count_entire_homes",
-  "fact_feature_view:calculated_host_listings_count_private_rooms",
-  "fact_feature_view:calculated_host_listings_count_shared_rooms",
 ]
