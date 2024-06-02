@@ -39,3 +39,4 @@ agent*
 *nohup.out
 *remoting
 secret-file
+workspace
