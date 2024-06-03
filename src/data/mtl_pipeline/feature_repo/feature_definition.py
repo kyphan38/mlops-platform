@@ -1,4 +1,4 @@
-from feast.types import Int64, Float64, String
+from feast.types import Int64, Float64
 from feast import Field, FeatureView
 from datetime import timedelta
 
@@ -13,19 +13,15 @@ listing_fv = FeatureView(
   ttl=timedelta(days=36500),
   schema=[
     Field(name="host_id", dtype=Int64),
-    Field(name="property_type", dtype=String),
-    Field(name="room_type", dtype=String),
     Field(name="accommodates", dtype=Float64),
     Field(name="bathrooms", dtype=Float64),
     Field(name="bedrooms", dtype=Float64),
     Field(name="beds", dtype=Float64),
     Field(name="price", dtype=Float64),
-    Field(name="has_availability", dtype=String),
     Field(name="availability_30", dtype=Float64),
     Field(name="availability_60", dtype=Float64),
     Field(name="availability_90", dtype=Float64),
     Field(name="availability_365", dtype=Float64),
-    Field(name="instant_bookable", dtype=String),
   ],
   online=True,
   source=listing_source,
@@ -38,15 +34,10 @@ host_fv = FeatureView(
   entities=[entity_host_id],
   ttl=timedelta(days=36500),
   schema=[
-    Field(name="host_response_time", dtype=String),
     Field(name="host_response_rate", dtype=Float64),
     Field(name="host_acceptance_rate", dtype=Float64),
-    Field(name="host_is_superhost", dtype=String),
     Field(name="host_listings_count", dtype=Float64),
     Field(name="host_total_listings_count", dtype=Float64),
-    Field(name="host_verifications", dtype=String),
-    Field(name="host_has_profile_pic", dtype=String),
-    Field(name="host_identity_verified", dtype=String),
   ],
   online=True,
   source=host_source,

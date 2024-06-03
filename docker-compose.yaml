@@ -35,6 +35,10 @@ services:
       - "3001"
       - -w
       - workspace.yaml
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Dagster daemon: Schedule and orchestrate pipeline executions
   dagster_daemon:
@@ -54,6 +58,10 @@ services:
     entrypoint:
       - dagster-daemon
       - run
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   ###################################################################### MINIO ######################################################################
   # Minio server for data storage
@@ -74,6 +82,10 @@ services:
     networks:
       - net
     command: ["server", "/data", "--console-address", ":9001"]
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Minio client for UNIX command
   minio_client:
@@ -90,6 +102,10 @@ services:
     depends_on:
       - minio_server
     entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/${MINIO_BUCKET}; /usr/bin/mc policy set public minio/${MINIO_BUCKET}; /usr/bin/mc mb minio/${MLFLOW_BUCKET}; /usr/bin/mc policy set public minio/${MLFLOW_BUCKET}; exit 0;"
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   ###################################################################### PIPELINES ######################################################################
   # Data ETL Pipeline
@@ -108,6 +124,10 @@ services:
       - ./.env
     networks:
      - net
+    deploy:
+      resources:
+        limits:
+          memory: 8g
 
   # Pipeline for materializing offline store into online store
   mtl_pipeline:
@@ -125,6 +145,10 @@ services:
       - ./.env
     networks:
      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Pipeline for training model
   training_pipeline:
@@ -142,6 +166,10 @@ services:
       - ./.env
     networks:
      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   ###################################################################### DATABASES ######################################################################
   # Postgres for Dagster
@@ -163,6 +191,10 @@ services:
       POSTGRES_PORT: ${DAGSTER_POSTGRES_PORT}
     networks:
       - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Postgres for Feast offline store
   feast_postgres:
@@ -185,6 +217,10 @@ services:
       - ./.env
     networks:
       - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Redis for Feast online store
   feast_redis:
@@ -201,6 +237,10 @@ services:
       - ./.env
     networks:
       - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   # Postgres for MLflow
   mlflow_postgres:
@@ -223,6 +263,10 @@ services:
       - ./.env
     networks:
       - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   sonarqube_postgres:
     image: sonarqube_postgres:latest
@@ -244,6 +288,10 @@ services:
       - ./.env
     networks:
       - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   ###################################################################### MODEL TRACKING AND REGISTRY ######################################################################
   # MLFlow
@@ -279,6 +327,10 @@ services:
       --host 0.0.0.0
       --serve-artifacts
       --artifacts-destination s3://artifacts
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
   ###################################################################### TEST ######################################################################
   # Jupyter notebook for experiment
@@ -307,6 +359,10 @@ services:
     networks:
       - net
     command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+    deploy:
+        resources:
+          limits:
+            memory: 4g
 
   ###################################################################### OPERATION ######################################################################
   jenkins:
@@ -358,6 +414,10 @@ services:
       - net
     depends_on:
       - sonarqube_postgres
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
 networks:
   net:

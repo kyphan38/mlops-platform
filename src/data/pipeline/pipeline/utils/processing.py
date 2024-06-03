@@ -18,7 +18,7 @@ def property_type_processing(val):
       return "shared Room"
   else:
       return "unique Stay"
-
+  
 def bathrooms_processing(txt):
   if isinstance(txt, str):
     if "half-bath" in txt.lower():

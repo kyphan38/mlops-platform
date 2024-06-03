@@ -1,4 +1,4 @@
-from dagster import Definitions
+from dagster import Definitions, multiprocess_executor
 
 # Import assets from each layer
 from .assets.bronze_layer import generate_assets
@@ -31,6 +31,11 @@ FEAST_POSTGRES_CONFIG = {
   "password": os.getenv("FEAST_POSTGRES_PASSWORD"),
 }
 
+# Define executor configuration
+executor_def = multiprocess_executor.configured({
+  "max_concurrent": 5
+})
+
 # Initialize definitions with dynamically generated assets
 defs = Definitions(
   assets=generate_assets("minio_io_manager") +
@@ -56,5 +61,6 @@ defs = Definitions(
   resources={
     "minio_io_manager": MinIOIOManager(MINIO_CONFIG),
     "psql_io_manager": PostgreSQLIOManager(FEAST_POSTGRES_CONFIG)
-  }
+  },
+  executor =executor_def
 )

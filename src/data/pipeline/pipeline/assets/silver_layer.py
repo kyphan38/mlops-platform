@@ -5,7 +5,7 @@ from dagster import asset, AssetIn, Output
 
 from .bronze_layer import return_dynamic_asset_names
 from ..utils.processing import host_response_time_processing, host_verifications_processing, property_type_processing, bathrooms_processing
-from ..utils.imputation import mode_imputation, median_imputation
+from ..utils.imputation import missing_data_handling
 from ..utils.checking import df_description
 
 silver_data_dir = "./data/silver"
@@ -49,6 +49,7 @@ categorical_cols = ["host_response_time", "host_is_superhost", "host_verificatio
                     "host_has_profile_pic", "host_identity_verified",
                     "property_type", "room_type",
                     "has_availability", "instant_bookable",]
+
 numerical_cols = ["host_response_rate", "host_acceptance_rate",
                   "host_listings_count", "host_total_listings_count",
                   "accommodates", "bathrooms", "bedrooms", "beds",
@@ -84,7 +85,7 @@ def data_processing(context, df):
           "availability_30", "availability_60", "availability_90", "availability_365",
           "number_of_reviews", "number_of_reviews_ltm", "number_of_reviews_l30d"]
   for col in cols:
-    df[col] = df[col].astype("float")
+    df[col] = df[col].astype("float32")
 
   # host_verifications
   df = host_verifications_processing(df, "host_verifications")
@@ -106,12 +107,6 @@ def data_processing(context, df):
 
   return df
 
-def missing_data_handling(context, df):
-  mode_imputation(df, categorical_cols)
-  median_imputation(df, numerical_cols)
-
-  return df
-
 # Location table
 @asset(
   name="location_table",
@@ -124,8 +119,8 @@ def missing_data_handling(context, df):
 def location_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
   df = data_processing(context, df)
-  df = missing_data_handling(context, df)
-  df = df[location_cols].drop_duplicates().reset_index(drop=True)
+  df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+  df = df[location_cols].drop_duplicates(subset=["id"]).reset_index(drop=True)
   df_description(context, df)
 
   return Output(
@@ -150,8 +145,8 @@ def location_table(context, **dataframes) -> Output:
 def listing_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
   df = data_processing(context, df)
-  df = missing_data_handling(context, df)
-  df = df[listing_cols].drop_duplicates().reset_index(drop=True)
+  df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+  df = df[listing_cols].drop_duplicates(subset=["id"]).reset_index(drop=True)
   df_description(context, df)
 
   return Output(
@@ -176,8 +171,8 @@ def listing_table(context, **dataframes) -> Output:
 def host_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
   df = data_processing(context, df)
-  df = missing_data_handling(context, df)
-  df = df[host_cols].drop_duplicates().reset_index(drop=True)
+  df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+  df = df[host_cols].drop_duplicates(subset=["host_id"]).reset_index(drop=True)
   df_description(context, df)
 
   return Output(
@@ -202,8 +197,8 @@ def host_table(context, **dataframes) -> Output:
 def review_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
   df = data_processing(context, df)
-  df = missing_data_handling(context, df)
-  df = df[review_cols].drop_duplicates().reset_index(drop=True)
+  df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+  df = df[review_cols].drop_duplicates(subset=["id"]).reset_index(drop=True)
   df_description(context, df)
 
   return Output(
@@ -227,8 +222,8 @@ def review_table(context, **dataframes) -> Output:
 def fact_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
   df = data_processing(context, df)
-  df = missing_data_handling(context, df)
-  df = df[fact_cols].drop_duplicates().reset_index(drop=True)
+  df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+  df = df[fact_cols].drop_duplicates(subset=["id"]).reset_index(drop=True)
   df_description(context, df)
 
   return Output(
