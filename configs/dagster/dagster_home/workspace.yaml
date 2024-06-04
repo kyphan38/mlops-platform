@@ -14,3 +14,8 @@ load_from:
       host: training_pipeline
       port: 4002
       location_name: "training_pipeline"
+
+  - grpc_server:
+      host: model_serving
+      port: 4003
+      location_name: "model_serving"

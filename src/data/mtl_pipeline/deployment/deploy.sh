@@ -14,6 +14,7 @@ usage() {
 
 deploy_feature_repo() {
   rsync -avr feature_repo ../training_pipeline --exclude registry
+  rsync -avr feature_repo ../model_serving --exclude registry
 }
 
 case $command in

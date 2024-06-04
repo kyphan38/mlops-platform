@@ -8,5 +8,7 @@ pymysql==1.1.0
 SQLAlchemy==2.0.29
 requests==2.31.0
 beautifulsoup4==4.12.3
-polars==0.20.23
 scikit-learn==1.4.2
+grpcio==1.60
+grpcio-tools==1.60
+dagster-graphql==1.7.3

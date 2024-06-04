@@ -40,3 +40,6 @@ agent*
 *remoting
 secret-file
 workspace
+
+# Model_serving
+*mlruns

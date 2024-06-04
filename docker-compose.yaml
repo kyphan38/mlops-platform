@@ -22,11 +22,6 @@ services:
       - ./.env
     networks:
       - net
-    depends_on:
-      - dagster_postgres
-      - pipeline
-      - mtl_pipeline
-      - training_pipeline
     entrypoint:
       - dagster-webserver
       - -h
@@ -38,7 +33,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4g
+          memory: 8g
 
   # Dagster daemon: Schedule and orchestrate pipeline executions
   dagster_daemon:
@@ -51,17 +46,109 @@ services:
       - ./.env
     networks:
       - net
-    depends_on:
-      - dagster_postgres
-      - pipeline
-      - mtl_pipeline
     entrypoint:
       - dagster-daemon
       - run
     deploy:
       resources:
         limits:
-          memory: 4g
+          memory: 8g
+
+  ###################################################################### PIPELINES ######################################################################
+  # Data ETL Pipeline
+  pipeline:
+    image: pipeline:latest
+    build:
+      context: ./src/data/pipeline
+      dockerfile: Dockerfile
+    container_name: pipeline
+    user: root
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./src/data/pipeline:/opt/dagster/app
+    env_file:
+      - ./.env
+    networks:
+     - net
+    depends_on:
+     - dagster_dagit
+     - dagster_daemon
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+
+  # Pipeline for materializing offline store into online store
+  mtl_pipeline:
+    image: mtl_pipeline:latest
+    build:
+      context: ./src/data/mtl_pipeline
+      dockerfile: Dockerfile
+    container_name: mtl_pipeline
+    user: root
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./src/data/mtl_pipeline:/opt/dagster/app
+    env_file:
+      - ./.env
+    networks:
+      - net
+    depends_on:
+     - dagster_dagit
+     - dagster_daemon
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+
+  # Pipeline for training model
+  training_pipeline:
+    image: training_pipeline:latest
+    build:
+      context: ./src/data/training_pipeline
+      dockerfile: Dockerfile
+    container_name: training_pipeline
+    user: root
+    ports:
+      - "4002:4002"
+    volumes:
+      - ./src/data/training_pipeline:/opt/dagster/app
+    env_file:
+      - ./.env
+    networks:
+     - net
+    depends_on:
+     - dagster_dagit
+     - dagster_daemon
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+
+  model_serving:
+    image: model_serving:latest
+    build:
+      context: ./src/data/model_serving
+      dockerfile: Dockerfile
+    container_name: model_serving
+    user: root
+    ports:
+      - "4003:4003"
+    volumes:
+      - ./src/data/model_serving:/opt/dagster/app
+    env_file:
+      - ./.env
+    networks:
+      - net
+    depends_on:
+     - dagster_dagit
+     - dagster_daemon
+    deploy:
+      resources:
+        limits:
+          memory: 8g
 
   ###################################################################### MINIO ######################################################################
   # Minio server for data storage
@@ -102,70 +189,6 @@ services:
     depends_on:
       - minio_server
     entrypoint: /bin/sh -c "until (/usr/bin/mc config host add minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}); do echo '...waiting...' && sleep 1; done; /usr/bin/mc mb minio/${MINIO_BUCKET}; /usr/bin/mc policy set public minio/${MINIO_BUCKET}; /usr/bin/mc mb minio/${MLFLOW_BUCKET}; /usr/bin/mc policy set public minio/${MLFLOW_BUCKET}; exit 0;"
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-
-  ###################################################################### PIPELINES ######################################################################
-  # Data ETL Pipeline
-  pipeline:
-    image: pipeline:latest
-    build:
-      context: ./src/data/pipeline
-      dockerfile: Dockerfile
-    container_name: pipeline
-    user: root
-    ports:
-      - "4000:4000"
-    volumes:
-      - ./src/data/pipeline:/opt/dagster/app
-    env_file:
-      - ./.env
-    networks:
-     - net
-    deploy:
-      resources:
-        limits:
-          memory: 8g
-
-  # Pipeline for materializing offline store into online store
-  mtl_pipeline:
-    image: mtl_pipeline:latest
-    build:
-      context: ./src/data/mtl_pipeline
-      dockerfile: Dockerfile
-    container_name: mtl_pipeline
-    user: root
-    ports:
-      - "4001:4001"
-    volumes:
-      - ./src/data/mtl_pipeline:/opt/dagster/app
-    env_file:
-      - ./.env
-    networks:
-     - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-
-  # Pipeline for training model
-  training_pipeline:
-    image: training_pipeline:latest
-    build:
-      context: ./src/data/training_pipeline
-      dockerfile: Dockerfile
-    container_name: training_pipeline
-    user: root
-    ports:
-      - "4002:4002"
-    volumes:
-      - ./src/data/training_pipeline:/opt/dagster/app
-    env_file:
-      - ./.env
-    networks:
-     - net
     deploy:
       resources:
         limits:
@@ -342,6 +365,7 @@ services:
     container_name: jupyter_notebook
     ports:
       - "8888:8888"
+      - "8000:8000" # API serving
     volumes:
       - ./logs/jupyter_notebook:/home/jovyan/logs
       - ./src/data/mtl_pipeline/feature_repo:/home/jovyan/feature_repo
@@ -421,8 +445,9 @@ services:
 
 networks:
   net:
-    driver: bridge
     name: net
-
+    driver: bridge
+    external: true
+    
 # volumes:
 #   mlflow_artifacts:
