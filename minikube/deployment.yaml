@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-model-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-model-app
+  template:
+    metadata:
+      labels:
+        app: api-model-app
+    spec:
+      containers:
+      - name: api-model-container
+        image: kyphan3802/api_model:latest
+        ports:
+        - containerPort: 7000
+        env:
+        - name: MLFLOW_TRACKING_URI
+          value: "http://host.minikube.internal:5000"
+        - name: MLFLOW_S3_ENDPOINT_URL
+          value: "http://host.minikube.internal:9000"
+        envFrom:
+        - configMapRef:
+            name: api-model-config

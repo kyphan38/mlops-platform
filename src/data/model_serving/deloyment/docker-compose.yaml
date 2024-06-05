@@ -7,8 +7,6 @@ services:
     container_name: api_model
     ports:
       - "7000:7000"
-    volumes:
-      - .:/code
     environment:
       MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
       MLFLOW_S3_ENDPOINT_URL: ${MINIO_ENDPOINT_URL}
@@ -20,6 +18,8 @@ services:
     networks:
       - net
     restart: on-failure
+
+# docker run --name api_model --network net -p 7000:7000 --env-file .env api_model:latest
 
 networks:
   net:

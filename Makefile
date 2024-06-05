@@ -14,6 +14,7 @@ deploy_env:
 	rsync -avr .env src/data/training_pipeline/.env
 	rsync -avr .env src/data/model_serving/.env
 	rsync -avr .env src/data/model_serving/deloyment/.env
+	rsync -avr .env minikube
 
 deploy_agent:
 	java -jar agent.jar -url http://localhost:8080/ -secret @secret-file -name "jenkins-agent" -workDir "/home/kyphan38/thesis/mlops-platform" > agent.log 2>&1 &

@@ -126,7 +126,7 @@ services:
       resources:
         limits:
           memory: 8g
-          
+
   # Pipeline for model serving
   model_serving:
     image: model_serving:latest
@@ -366,7 +366,6 @@ services:
     container_name: jupyter_notebook
     ports:
       - "8888:8888"
-      - "8000:8000" # API serving
     volumes:
       - ./logs/jupyter_notebook:/home/jovyan/logs
       - ./src/data/mtl_pipeline/feature_repo:/home/jovyan/feature_repo
@@ -533,7 +532,7 @@ networks:
     name: net
     driver: bridge
     external: true
-    
+
 # volumes:
 #   mlflow_artifacts:
 

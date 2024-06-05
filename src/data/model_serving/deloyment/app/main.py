@@ -79,7 +79,7 @@ class ModelServing:
 app = FastAPI()
 
 def load_best_model(run_id, model_name):
-  mlflow_tracking_uri = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+  mlflow_tracking_uri = os.getenv('MLFLOW_TRACKING_URI')
   mlflow.set_tracking_uri(mlflow_tracking_uri)
   model_uri = f"runs:/{run_id}/{model_name}"
   model = mlflow.sklearn.load_model(model_uri)
