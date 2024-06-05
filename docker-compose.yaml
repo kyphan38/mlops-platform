@@ -126,7 +126,8 @@ services:
       resources:
         limits:
           memory: 8g
-
+          
+  # Pipeline for model serving
   model_serving:
     image: model_serving:latest
     build:
@@ -443,6 +444,90 @@ services:
         limits:
           memory: 4g
 
+  ###################################################################### OBSERVABILITY vs MONITORING ######################################################################
+  # Prometheus
+  prometheus:
+    image: prometheus:latest
+    build:
+      context: ./configs/prometheus
+      dockerfile: Dockerfile
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./configs/prometheus/promethues.yaml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - ./logs/prometheus:/opt/bitnami/prometheus/data
+    env_file:
+      - ./.env
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  # Grafana
+  grafana:
+    image: grafana:latest
+    build:
+      context: ./configs/grafana
+      dockerfile: Dockerfile
+    container_name: grafana
+    ports:
+      - "3030:3000"
+    volumes:
+      - ./logs/grafana:/var/lib/grafana
+    env_file:
+      - ./.env
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  # Loki
+  loki:
+    image: loki:latest
+    build:
+      context: ./configs/loki
+      dockerfile: Dockerfile
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./configs/loki/local-loki.yaml:/etc/loki/local-config.yaml
+      - ./logs/loki:/loki
+    env_file:
+      - ./.env
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  # Promtail
+  promtail:
+    image: promtail:latest
+    build:
+      context: ./configs/promtail
+      dockerfile: Dockerfile
+    container_name: promtail
+    ports:
+      - "9080:9080"
+    volumes:
+      - ./configs/promtail/config.yaml:/etc/promtail/config.yaml
+      - ./logs/promtail/var/log:/var/log
+    env_file:
+      - ./.env
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
 networks:
   net:
     name: net
@@ -451,3 +536,15 @@ networks:
     
 # volumes:
 #   mlflow_artifacts:
+
+# Port note
+# dagster 3001
+# minio 9001
+# mlflow 5000
+# jupyter 8888
+# jenkins 8080
+# sonarqube 9095
+# prometheus 9091
+# grafana 3030
+# loki 3100
+# promtail 9080

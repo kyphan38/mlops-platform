@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
@@ -9,6 +10,11 @@ from feast import FeatureStore
 import mlflow
 import mlflow.sklearn
 import uvicorn
+from prometheus_fastapi_instrumentator import Instrumentator
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class DataInput(BaseModel):
   id: float
@@ -44,7 +50,7 @@ class DataInput(BaseModel):
   maximum_maximum_nights: float
   minimum_nights_avg_ntm: float
   maximum_nights_avg_ntm: float
-  
+
 class ModelServing:
   def __init__(self, model):
     self.model = model
@@ -84,15 +90,17 @@ best_model_run_id, best_model_name = "6f5ea1d794804da681cc85c0ff02c9dc", "Decisi
 model = load_best_model(best_model_run_id, best_model_name)
 model_serving = ModelServing(model)
 
-@app.get('/')
-async def read_root():
-  return {'message': 'Iris model API'}
+# Instrumentation
+instrumentator = Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 @app.post("/predict")
 async def predict(data_input: DataInput):
   data_dict = data_input.dict()
   df = pd.DataFrame([data_dict])
   pred = model_serving.data_prediction(df)
+
+  logger.info(f"Received data: {data_dict}")
+  logger.info(f"Prediction result: {pred.tolist()}")
 
   return {
     "prediction result": pred.tolist()
