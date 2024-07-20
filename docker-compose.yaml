@@ -292,30 +292,30 @@ services:
         limits:
           memory: 4g
 
-  sonarqube_postgres:
-    image: sonarqube_postgres:latest
-    build:
-      context: ./configs/postgres/sonarqube
-      dockerfile: Dockerfile
-    container_name: sonarqube_postgres
-    ports:
-    - "5435:5432"
-    volumes:
-      - ./logs/sonarqube_postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${SONARQUBE_POSTGRES_DB}
-      POSTGRES_USER: ${SONARQUBE_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${SONARQUBE_POSTGRES_PASSWORD}
-      POSTGRES_HOST: ${SONARQUBE_POSTGRES_HOST}
-      POSTGRES_PORT: ${SONARQUBE_POSTGRES_PORT}
-    env_file:
-      - ./.env
-    networks:
-      - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
+  # sonarqube_postgres:
+  #   image: sonarqube_postgres:latest
+  #   build:
+  #     context: ./configs/postgres/sonarqube
+  #     dockerfile: Dockerfile
+  #   container_name: sonarqube_postgres
+  #   ports:
+  #   - "5435:5432"
+  #   volumes:
+  #     - ./logs/sonarqube_postgres:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_DB: ${SONARQUBE_POSTGRES_DB}
+  #     POSTGRES_USER: ${SONARQUBE_POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${SONARQUBE_POSTGRES_PASSWORD}
+  #     POSTGRES_HOST: ${SONARQUBE_POSTGRES_HOST}
+  #     POSTGRES_PORT: ${SONARQUBE_POSTGRES_PORT}
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
 
   ###################################################################### MODEL TRACKING AND REGISTRY ######################################################################
   # MLFlow
@@ -415,123 +415,123 @@ services:
 
   ###################################################################### CODE ANALYSIS ######################################################################
   # Code Analysis
-  sonarqube:
-    image: sonarqube:latest
-    build:
-      context: ./configs/sonarqube
-      dockerfile: Dockerfile
-    container_name: sonarqube
-    ports:
-      - "9095:9000"
-    volumes:
-      - ./logs/sonarqube/sonarqube_data:/opt/sonarqube/data
-      - ./logs/sonarqube/sonarqube_extensions:/opt/sonarqube/extensions
-      - ./logs/sonarqube/sonarqube_logs:/opt/sonarqube/logs
-      - .:/opt/sonarqube/mlops_platform
-    environment:
-      SONAR_JDBC_URL: jdbc:postgresql://sonarqube_postgres:5432/${SONARQUBE_POSTGRES_DB}
-      SONAR_JDBC_USERNAME: ${SONARQUBE_POSTGRES_USER}
-      SONAR_JDBC_PASSWORD: ${SONARQUBE_POSTGRES_PASSWORD}
-    env_file:
-      - ./.env
-    networks:
-      - net
-    depends_on:
-      - sonarqube_postgres
-    deploy:
-      resources:
-        limits:
-          memory: 4g
+  # sonarqube:
+  #   image: sonarqube:latest
+  #   build:
+  #     context: ./configs/sonarqube
+  #     dockerfile: Dockerfile
+  #   container_name: sonarqube
+  #   ports:
+  #     - "9095:9000"
+  #   volumes:
+  #     - ./logs/sonarqube/sonarqube_data:/opt/sonarqube/data
+  #     - ./logs/sonarqube/sonarqube_extensions:/opt/sonarqube/extensions
+  #     - ./logs/sonarqube/sonarqube_logs:/opt/sonarqube/logs
+  #     - .:/opt/sonarqube/mlops_platform
+  #   environment:
+  #     SONAR_JDBC_URL: jdbc:postgresql://sonarqube_postgres:5432/${SONARQUBE_POSTGRES_DB}
+  #     SONAR_JDBC_USERNAME: ${SONARQUBE_POSTGRES_USER}
+  #     SONAR_JDBC_PASSWORD: ${SONARQUBE_POSTGRES_PASSWORD}
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   depends_on:
+  #     - sonarqube_postgres
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
 
   ###################################################################### OBSERVABILITY vs MONITORING ######################################################################
   # Prometheus
-  prometheus:
-    image: prometheus:latest
-    build:
-      context: ./configs/prometheus
-      dockerfile: Dockerfile
-    container_name: prometheus
-    ports:
-      - "9091:9090"
-    volumes:
-      - ./configs/prometheus/promethues.yaml:/opt/bitnami/prometheus/conf/prometheus.yml
-      - ./logs/prometheus:/opt/bitnami/prometheus/data
-    env_file:
-      - ./.env
-    networks:
-      - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
+  # prometheus:
+  #   image: prometheus:latest
+  #   build:
+  #     context: ./configs/prometheus
+  #     dockerfile: Dockerfile
+  #   container_name: prometheus
+  #   ports:
+  #     - "9091:9090"
+  #   volumes:
+  #     - ./configs/prometheus/promethues.yaml:/opt/bitnami/prometheus/conf/prometheus.yml
+  #     - ./logs/prometheus:/opt/bitnami/prometheus/data
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
 
-  # Grafana
-  grafana:
-    image: grafana:latest
-    build:
-      context: ./configs/grafana
-      dockerfile: Dockerfile
-    container_name: grafana
-    ports:
-      - "3030:3000"
-    volumes:
-      - ./logs/grafana:/var/lib/grafana
-    env_file:
-      - ./.env
-    networks:
-      - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-
-  # Loki
-  loki:
-    image: loki:latest
-    build:
-      context: ./configs/loki
-      dockerfile: Dockerfile
-    container_name: loki
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./configs/loki/local-loki.yaml:/etc/loki/local-config.yaml
-      - ./logs/loki:/loki
-    env_file:
-      - ./.env
-    networks:
-      - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-
-  # Promtail
-  promtail:
-    image: promtail:latest
-    build:
-      context: ./configs/promtail
-      dockerfile: Dockerfile
-    container_name: promtail
-    ports:
-      - "9080:9080"
-    volumes:
-      - ./configs/promtail/config.yaml:/etc/promtail/config.yaml
-      - ./logs/promtail/var/log:/var/log
-    env_file:
-      - ./.env
-    networks:
-      - net
-    deploy:
-      resources:
-        limits:
-          memory: 4g
+  # # Grafana
+  # grafana:
+  #   image: grafana:latest
+  #   build:
+  #     context: ./configs/grafana
+  #     dockerfile: Dockerfile
+  #   container_name: grafana
+  #   ports:
+  #     - "3030:3000"
+  #   volumes:
+  #     - ./logs/grafana:/var/lib/grafana
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
 
 networks:
   net:
     name: net
     driver: bridge
     external: true
+
+  # # Loki
+  # loki:
+  #   image: loki:latest
+  #   build:
+  #     context: ./configs/loki
+  #     dockerfile: Dockerfile
+  #   container_name: loki
+  #   ports:
+  #     - "3100:3100"
+  #   volumes:
+  #     - ./configs/loki/local-loki.yaml:/etc/loki/local-config.yaml
+  #     - ./logs/loki:/loki
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
+
+  # # Promtail
+  # promtail:
+  #   image: promtail:latest
+  #   build:
+  #     context: ./configs/promtail
+  #     dockerfile: Dockerfile
+  #   container_name: promtail
+  #   ports:
+  #     - "9080:9080"
+  #   volumes:
+  #     - ./configs/promtail/config.yaml:/etc/promtail/config.yaml
+  #     - ./logs/promtail/var/log:/var/log
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4g
 
 # volumes:
 #   mlflow_artifacts:

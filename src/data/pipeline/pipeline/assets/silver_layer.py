@@ -6,6 +6,7 @@ from dagster import asset, AssetIn, Output
 from .bronze_layer import return_dynamic_asset_names
 from ..utils.processing import host_response_time_processing, host_verifications_processing, property_type_processing, bathrooms_processing
 from ..utils.imputation import missing_data_handling
+from ..utils.checking import collect_all_columns_info
 from ..utils.checking import df_description
 
 silver_data_dir = "./data/silver"
@@ -60,6 +61,19 @@ numerical_cols = ["host_response_rate", "host_acceptance_rate",
                   "number_of_reviews", "number_of_reviews_ltm", "number_of_reviews_l30d",
                   "review_scores_rating", "review_scores_accuracy", "review_scores_cleanliness", "review_scores_checkin",
                   "review_scores_communication", "review_scores_location", "review_scores_value", "reviews_per_month",]
+
+all_cols = [
+  "id", "host_id", "accommodates", "bathrooms", "bedrooms", "beds", "price",
+  "availability_30", "availability_60", "availability_90", "availability_365",
+  # "event_timestamp", 
+  "host_response_rate", "host_acceptance_rate", "host_listings_count",
+  "host_total_listings_count", "number_of_reviews", "number_of_reviews_ltm", "number_of_reviews_l30d",
+  "review_scores_rating", "review_scores_accuracy", "review_scores_cleanliness", "review_scores_checkin",
+  "review_scores_communication", "review_scores_location", "review_scores_value", "reviews_per_month",
+  "minimum_nights", "maximum_nights", "minimum_minimum_nights", "maximum_minimum_nights",
+  "minimum_maximum_nights", "maximum_maximum_nights", "minimum_nights_avg_ntm", "maximum_nights_avg_ntm"
+]
+
 
 def data_processing(context, df):
   # Drop some incorrect data points
@@ -118,9 +132,19 @@ def data_processing(context, df):
 )
 def location_table(context, **dataframes) -> Output:
   df = pd.concat(dataframes.values())
+
   df = data_processing(context, df)
+
+  # context.log.info("Test 2")
+  # collect_all_columns_info(df, context, all_cols)
+
   df = missing_data_handling(context, df, numerical_cols, categorical_cols)
+
+  # context.log.info("Test 3")
+  # collect_all_columns_info(df, context, all_cols)
+
   df = df[location_cols].drop_duplicates(subset=["id"]).reset_index(drop=True)
+
   df_description(context, df)
 
   return Output(

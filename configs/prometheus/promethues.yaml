@@ -3,11 +3,124 @@ global:
   evaluation_interval: "5s"
 
 scrape_configs:
-  - job_name: "api_model"
-    metrics_path: /metrics 
-    static_configs:
-    - targets: ["api_model:7000"]
+  # - job_name: "api_model"
+  #   metrics_path: /metrics 
+  #   static_configs:
+  #     - targets: ["192.168.49.2:30000"]
 
-  - job_name: "loki"
+  - job_name: "api_model1"
+    metrics_path: /metrics
     static_configs:
-      - targets: ["loki:3100"]
+      - targets: ["192.168.49.2:30000"]
+
+  - job_name: "api_model2"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:30000"]
+
+  - job_name: "api_model3"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["192.168.49.2:7000"]
+
+  - job_name: "api_model4"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["192.168.49.2:42528"]
+
+  - job_name: "api_model5"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:7000"]
+
+  - job_name: "api_model6"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:42528"]
+
+  - job_name: "api_model7"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:30000"]
+
+  - job_name: "api_model8"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api_model:7000"]
+
+  - job_name: "api_model9"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api_model:42528"]
+
+  - job_name: "api_model10"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api_model:30000"]
+
+  - job_name: "api_model11"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-container:7000"]
+
+  - job_name: "api_model12"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-container:42528"]
+
+  - job_name: "api_model13"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-container:30000"]
+
+  - job_name: "api_model14"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["10.244.0.8:7000"]
+
+  - job_name: "api_model15"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["10.244.0.8:42528"]
+
+  - job_name: "api_model16"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["10.244.0.8:30000"]
+
+  - job_name: "api_model17"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.minikube.internal:7000"]
+
+  - job_name: "api_model18"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.minikube.internal:42528"]
+
+  - job_name: "api_model19"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.minikube.internal:30000"]
+
+  - job_name: "api_model20"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-deployment-5896f95579-mvqpz:7000"]
+
+  - job_name: "api_model21"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-deployment-5896f95579-mvqpz:42528"]
+
+  - job_name: "api_model22"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api-model-deployment-5896f95579-mvqpz:30000"]
+
+
+
+
+  # - job_name: "loki"
+  #   static_configs:
+  #     - targets: ["loki:3100"]

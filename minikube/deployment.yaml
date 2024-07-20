@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: api-model-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: api-model-app
@@ -18,6 +18,9 @@ spec:
         ports:
         - containerPort: 7000
         env:
+        # host.minikube.internal is the DNS name that allows pods running inside Minikube cluster to access services running on the host machine
+        # This DNS name resolves to the IP address of the host machine, enabling communication between the Minikube cluster and the host's network services
+        # In this case mlflow and minio container was already built then expose their port into host machine
         - name: MLFLOW_TRACKING_URI
           value: "http://host.minikube.internal:5000"
         - name: MLFLOW_S3_ENDPOINT_URL

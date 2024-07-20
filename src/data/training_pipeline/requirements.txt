@@ -1,7 +1,6 @@
 dagit==1.7.3
 dagster==1.7.3
 dagster-postgres==0.23.3
-dagster-shell==0.23.3
 feast==0.37.1
 redis==5.0.4
 scikit-learn==1.5.0
@@ -10,3 +9,5 @@ dagster-mlflow==0.23.3
 grpcio==1.60
 grpcio-tools==1.60
 dagster-graphql==1.7.3
+boto3==1.34.116
+protobuf>=3.20.0,<5

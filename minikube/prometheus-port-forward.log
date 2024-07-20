@@ -1,0 +1,3 @@
+Unable to listen on port 9090: Listeners failed to create with the followiHandling connection for 9090
+E0720 23:40:43.989148  626784 portforward.go:409] an error occurred forwarding 9090 -> 9090: error forwarding port 9090 to pod eace4609d4098c3bd185f7ffa2073cbb322235b651bc1f4dc1ebf6586659a2c8, uid : Error response from daemon: No such container: eace4609d4098c3bd185f7ffa2073cbb322235b651bc1f4dc1ebf6586659a2c8
+error: lost connection to pod

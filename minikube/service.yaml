@@ -9,4 +9,5 @@ spec:
     - protocol: TCP
       port: 7000
       targetPort: 7000
-  type: LoadBalancer
+      nodePort: 30000 # type: NodePort
+  type: NodePort
