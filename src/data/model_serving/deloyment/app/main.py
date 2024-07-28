@@ -86,7 +86,7 @@ def load_best_model(run_id, model_name):
 
   return model
 
-best_model_run_id, best_model_name = "ee29348933aa4d1e90a590e2395f18a1", "Linear Regression"
+best_model_run_id, best_model_name = "19ec7f9db159473e974c0509c38a69ee", "Linear Regression"
 model = load_best_model(best_model_run_id, best_model_name)
 model_serving = ModelServing(model)
 
