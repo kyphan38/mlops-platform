@@ -1,0 +1,28 @@
+services:
+  api_model:
+    image: api_model:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_model
+    ports:
+      - "7000:7000"
+    environment:
+      MLFLOW_TRACKING_URI: ${MLFLOW_ENDPOINT_URL}
+      MLFLOW_S3_ENDPOINT_URL: ${MINIO_ENDPOINT_URL}
+      MLFLOW_S3_IGNORE_TLS: true
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    env_file:
+      - ./.env
+    networks:
+      - net
+    restart: on-failure
+
+# docker run --name api_model --network net -p 7000:7000 --env-file .env api_model:latest
+
+networks:
+  net:
+    name: net
+    driver: bridge
+    external: true

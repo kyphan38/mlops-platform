@@ -1,30 +1,21 @@
 listing_features = [
   "listing_feature_view:host_id",
-  "listing_feature_view:property_type",
-  "listing_feature_view:room_type",
   "listing_feature_view:accommodates",
   "listing_feature_view:bathrooms",
   "listing_feature_view:bedrooms",
   "listing_feature_view:beds",
   "listing_feature_view:price",
-  "listing_feature_view:has_availability",
   "listing_feature_view:availability_30",
   "listing_feature_view:availability_60",
   "listing_feature_view:availability_90",
   "listing_feature_view:availability_365",
-  "listing_feature_view:instant_bookable",
 ]
 
 host_features = [
-  "host_feature_view:host_response_time",
   "host_feature_view:host_response_rate",
   "host_feature_view:host_acceptance_rate",
-  "host_feature_view:host_is_superhost",
   "host_feature_view:host_listings_count",
   "host_feature_view:host_total_listings_count",
-  "host_feature_view:host_verifications",
-  "host_feature_view:host_has_profile_pic",
-  "host_feature_view:host_identity_verified",
 ]
 
 review_features = [

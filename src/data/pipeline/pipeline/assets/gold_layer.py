@@ -7,18 +7,16 @@ compute_kind = "Pandas"
 layer = "gold_layer"
 
 listing_cols = ["id",
-                "host_id", "property_type", "room_type", "accommodates",
+                "host_id", "accommodates",
                 "bathrooms", "bedrooms", "beds",
                 "price",
-                "has_availability", "availability_30", "availability_60", "availability_90", "availability_365",
-                "instant_bookable",
+                "availability_30", "availability_60", "availability_90", "availability_365",
                 "event_timestamp"
                 ]
 
 host_cols = ["host_id",
-             "host_response_time", "host_response_rate", "host_acceptance_rate", "host_is_superhost",
+             "host_response_rate", "host_acceptance_rate",
              "host_listings_count", "host_total_listings_count",
-             "host_verifications", "host_has_profile_pic", "host_identity_verified",
              "event_timestamp"
              ]
 

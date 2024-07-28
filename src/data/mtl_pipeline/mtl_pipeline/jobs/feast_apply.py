@@ -2,7 +2,7 @@ import os
 import subprocess
 from dagster import job, op, Output
 
-command = "feast apply; feast materialize-incremental $(date +%Y-%m-%d)"
+command = "rm -rf .ipynb_checkpoints/; feast apply; feast materialize-incremental $(date +%Y-%m-%d)"
 
 @op
 def feast_apply(context):

@@ -1,5 +1,6 @@
 # Logs
 /logs/
+/log/
 
 # Dagster
 /configs/dagster/dagster_home/.logs_queue/
@@ -40,3 +41,12 @@ agent*
 *remoting
 secret-file
 workspace
+
+# Model_serving
+*mlruns
+
+# Ignore all log files in the minikube directory
+minikube/*.log
+minikube/prometheus-port-forward.log
+minikube/grafana-port-forward.log
+minikube/api-model-port-forward.log
